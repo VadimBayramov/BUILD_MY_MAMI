@@ -1,0 +1,18 @@
+.handle {
+  flex-shrink: 0;
+  width: 4px;
+  cursor: col-resize;
+  background: transparent;
+  transition: var(--builder-transition);
+  transition-property: background-color;
+}
+
+.handle:hover,
+.handle.dragging {
+  background: var(--builder-accent);
+}
+
+.handle:focus-visible {
+  outline: 2px solid var(--builder-accent);
+  outline-offset: 1px;
+}

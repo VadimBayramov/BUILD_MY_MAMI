@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FunnelBuilder — Architecture Map</title>
+<style>
+  :root {
+    --bg: #0c0e14;
+    --surface: #13151f;
+    --surface2: #1a1d2b;
+    --border: #252838;
+    --border2: #32364a;
+    --text: #e4e6f0;
+    --muted: #636882;
+    --accent: #4f7cff;
+    --accent2: #7c5fff;
+    --green: #22d3a0;
+    --yellow: #f5c842;
+    --red: #ff4f6a;
+    --orange: #ff8c42;
+    --purple: #b06fff;
+    --teal: #2dd4c0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    overflow: hidden;
+    height: 100vh;
+    user-select: none;
+  }
+
+  /* ── TOP BAR ── */
+  #topbar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 48px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    z-index: 100;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--accent);
+    letter-spacing: -0.3px;
+  }
+  .logo-icon {
+    width: 26px; height: 26px;
+    background: var(--accent);
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 900; color: #fff;
+  }
+
+  .sep { width: 1px; height: 24px; background: var(--border2); margin: 0 4px; }
+
+  .tab {
+    padding: 5px 12px;
+    border-radius: 7px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    background: transparent;
+  }
+  .tab:hover { background: var(--surface2); color: var(--text); }
+  .tab.active { background: var(--accent); color: #fff; }
+
+  .spacer { flex: 1; }
+
+  .hint {
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .kbd {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-size: 10px;
+    font-family: monospace;
+  }
+
+  .zoom-info {
+    font-size: 12px;
+    color: var(--muted);
+    min-width: 48px;
+    text-align: right;
+  }
+
+  /* ── CANVAS ── */
+  #viewport {
+    position: fixed;
+    top: 48px; left: 0; right: 0; bottom: 0;
+    overflow: hidden;
+    cursor: grab;
+  }
+  #viewport.grabbing { cursor: grabbing; }
+  #viewport.spaced { cursor: crosshair; }
+
+  #canvas {
+    position: absolute;
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+
+  /* ── MINIMAP ── */
+  #minimap {
+    position: fixed;
+    bottom: 20px; right: 20px;
+    width: 180px; height: 110px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 10px;
+    overflow: hidden;
+    z-index: 100;
+  }
+  #minimap canvas { display: block; }
+  #minimap-viewport {
+    position: absolute;
+    border: 1px solid var(--accent);
+    background: rgba(79,124,255,0.08);
+    pointer-events: none;
+    border-radius: 2px;
+  }
+
+  /* ── LEGEND ── */
+  #legend {
+    position: fixed;
+    bottom: 20px; left: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    z-index: 100;
+    font-size: 11px;
+  }
+  #legend h4 { color: var(--muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .legend-row { display: flex; align-items: center; gap: 7px; padding: 2px 0; color: var(--text); }
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; }
+
+  /* ── TOOLTIP ── */
+  #tooltip {
+    position: fixed;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    max-width: 280px;
+    z-index: 200;
+    pointer-events: none;
+    display: none;
+    line-height: 1.5;
+  }
+  #tooltip h4 { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  #tooltip p { color: var(--muted); font-size: 11px; }
+  #tooltip .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  #tooltip .tag {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* ── NODES ── */
+  .group {
+    position: absolute;
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    background: var(--surface2);
+    padding: 14px 16px 16px;
+  }
+  .group-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .group-icon {
+    width: 18px; height: 18px;
+    border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px;
+  }
+  .group-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .group-col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .node {
+    border-radius: 9px;
+    padding: 9px 13px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+    position: relative;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .node:hover { filter: brightness(1.15); transform: translateY(-1px); }
+  .node.selected { border-color: var(--accent) !important; box-shadow: 0 0 0 2px rgba(79,124,255,0.3); }
+
+  .node-icon { font-size: 12px; opacity: 0.9; }
+  .node-label { flex: 1; }
+  .node-badge {
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    background: rgba(0,0,0,0.25);
+    font-weight: 600;
+    letter-spacing: 0.2px;
+  }
+
+  /* ── EDGE SVG ── */
+  #edges-svg {
+    position: absolute;
+    top: 0; left: 0;
+    pointer-events: none;
+    overflow: visible;
+  }
+  .edge { fill: none; stroke-width: 1.5; opacity: 0.45; }
+  .edge-label {
+    font-size: 9px;
+    fill: var(--muted);
+    text-anchor: middle;
+  }
+  .edge.highlighted { opacity: 1; stroke-width: 2; }
+  .arrowhead { }
+
+  /* ── SECTION TITLE (big label) ── */
+  .section-title {
+    position: absolute;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--muted);
+    pointer-events: none;
+  }
+
+  /* ── SEARCH ── */
+  #search-wrap {
+    position: relative;
+  }
+  #search {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 12px;
+    padding: 5px 10px;
+    outline: none;
+    width: 180px;
+    transition: all 0.15s;
+  }
+  #search:focus { border-color: var(--accent); width: 220px; }
+  #search::placeholder { color: var(--muted); }
+
+  /* ── DETAIL PANEL ── */
+  #detail {
+    position: fixed;
+    top: 60px; right: 12px;
+    width: 280px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 12px;
+    padding: 16px;
+    z-index: 100;
+    display: none;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+  #detail h3 { font-size: 14px; margin-bottom: 4px; }
+  #detail .d-type { color: var(--muted); font-size: 11px; margin-bottom: 10px; }
+  #detail .d-section { margin-top: 10px; }
+  #detail .d-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 4px; }
+  #detail .d-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  #detail .d-tag {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 10px;
+  }
+  #detail .d-file {
+    font-family: monospace;
+    font-size: 10px;
+    color: var(--accent);
+    background: var(--surface2);
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin-top: 3px;
+    display: inline-block;
+  }
+  #detail .d-close {
+    position: absolute; top: 12px; right: 12px;
+    background: none; border: none; color: var(--muted);
+    cursor: pointer; font-size: 16px; padding: 2px 6px;
+    border-radius: 4px;
+  }
+  #detail .d-close:hover { background: var(--surface2); }
+
+  /* ── PHASE BADGE ── */
+  .phase {
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    margin-left: 4px;
+    font-weight: 700;
+  }
+  .phase-1 { background: #22d3a020; color: var(--green); }
+  .phase-2 { background: #4f7cff20; color: var(--accent); }
+  .phase-3 { background: #f5c84220; color: var(--yellow); }
+  .phase-4 { background: #ff8c4220; color: var(--orange); }
+  .phase-5 { background: #b06fff20; color: var(--purple); }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="logo">
+    <div class="logo-icon">F</div>
+    FunnelBuilder
+  </div>
+  <div class="sep"></div>
+  <button class="tab active" onclick="switchTab('arch')">Architecture</button>
+  <button class="tab" onclick="switchTab('stack')">Tech Stack</button>
+  <button class="tab" onclick="switchTab('phases')">Phases</button>
+  <div class="sep"></div>
+  <div id="search-wrap">
+    <input id="search" type="text" placeholder="Search modules…" oninput="onSearch(this.value)" />
+  </div>
+  <div class="spacer"></div>
+  <div class="hint">
+    <span class="kbd">Scroll</span> zoom
+    <span class="kbd">Space</span>+drag pan
+    <span class="kbd">Ctrl+0</span> reset
+  </div>
+  <div class="sep"></div>
+  <div class="zoom-info" id="zoom-label">100%</div>
+</div>
+
+<div id="viewport">
+  <div id="canvas">
+    <svg id="edges-svg"></svg>
+    <div id="nodes"></div>
+  </div>
+</div>
+
+<div id="minimap">
+  <canvas id="mm-canvas" width="180" height="110"></canvas>
+  <div id="minimap-viewport"></div>
+</div>
+
+<div id="legend">
+  <h4>Layers</h4>
+  <div class="legend-row"><div class="legend-dot" style="background:#4f7cff"></div> Components</div>
+  <div class="legend-row"><div class="legend-dot" style="background:#22d3a0"></div> Store / State</div>
+  <div class="legend-row"><div class="legend-dot" style="background:#b06fff"></div> Services</div>
+  <div class="legend-row"><div class="legend-dot" style="background:#f5c842"></div> Hooks</div>
+  <div class="legend-row"><div class="legend-dot" style="background:#ff8c42"></div> Utils</div>
+  <div class="legend-row"><div class="legend-dot" style="background:#ff4f6a"></div> Types</div>
+  <div class="legend-row"><div class="legend-dot" style="background:#2dd4c0"></div> Server</div>
+</div>
+
+<div id="tooltip"></div>
+
+<div id="detail">
+  <button class="d-close" onclick="closeDetail()">✕</button>
+  <h3 id="d-name"></h3>
+  <div class="d-type" id="d-type"></div>
+  <div class="d-section">
+    <div class="d-label">Description</div>
+    <div id="d-desc"></div>
+  </div>
+  <div class="d-section" id="d-file-wrap">
+    <div class="d-label">File</div>
+    <span class="d-file" id="d-file"></span>
+  </div>
+  <div class="d-section" id="d-deps-wrap">
+    <div class="d-label">Imports from</div>
+    <div class="d-tags" id="d-deps"></div>
+  </div>
+  <div class="d-section" id="d-phase-wrap">
+    <div class="d-label">Phase</div>
+    <div id="d-phase"></div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  DATA MODEL
+// ══════════════════════════════════════════════════════════
+
+const NODES = [
+  // ── ENTRY POINTS ──
+  { id:'main', label:'main.tsx', icon:'🚀', group:'entry', color:'#4f7cff',
+    desc:'React entry point. Mounts <App /> в #root, импортирует global.css.',
+    file:'src/main.tsx', phase:1, deps:['App','global-css'] },
+  { id:'App', label:'App.tsx', icon:'⚛', group:'entry', color:'#4f7cff',
+    desc:'Корневой компонент. Запускает useKeyboardShortcuts(), рендерит <AppShell />.',
+    file:'src/App.tsx', phase:1, deps:['AppShell','useKeyboardShortcuts'] },
+
+  // ── LAYOUT ──
+  { id:'AppShell', label:'AppShell', icon:'🏗', group:'layout', color:'#4f7cff',
+    desc:'Основной layout. Header + LeftPanel + Canvas (mode switch) + RightPanel.',
+    file:'src/components/layout/AppShell.tsx', phase:1, deps:['Header','LeftPanel','RightPanel','MapCanvas','ManagerView','DeveloperView','useFunnelStore'] },
+  { id:'Header', label:'Header', icon:'📌', group:'layout', color:'#4f7cff',
+    desc:'Верхняя панель. Mode tabs (Map/Manager/Dev), Undo/Redo, Save, Export, панель-тоглы.',
+    file:'src/components/layout/Header.tsx', phase:1, deps:['useFunnelStore'] },
+  { id:'LeftPanel', label:'LeftPanel', icon:'◀', group:'layout', color:'#4f7cff',
+    desc:'Диспетчер левой панели по активному режиму: BlockLibrary / ScreenList / FileExplorer.',
+    file:'src/components/layout/LeftPanel.tsx', phase:1, deps:['BlockLibrary','ScreenList','FileExplorer','useFunnelStore'] },
+  { id:'RightPanel', label:'RightPanel', icon:'▶', group:'layout', color:'#4f7cff',
+    desc:'Диспетчер правой панели по выделению: ScreenProperties / ElementProperties / FunnelSettings.',
+    file:'src/components/layout/RightPanel.tsx', phase:1, deps:['ScreenProperties','ElementProperties','FunnelSettings','useFunnelStore'] },
+  { id:'PanelResizer', label:'PanelResizer', icon:'↔', group:'layout', color:'#4f7cff',
+    desc:'Ручка ресайза панели. mousedown → mousemove → mouseup. left/right side.',
+    file:'src/components/layout/PanelResizer.tsx', phase:1, deps:[] },
+  { id:'StatusBar', label:'StatusBar', icon:'📊', group:'layout', color:'#4f7cff',
+    desc:'Нижняя строка состояния. Режим, кол-во экранов, выделение, zoom %.',
+    file:'src/components/layout/StatusBar.tsx', phase:1, deps:['useFunnelStore'] },
+
+  // ── MAP MODE ──
+  { id:'MapCanvas', label:'MapCanvas', icon:'🗺', group:'map', color:'#4f7cff',
+    desc:'React Flow canvas. Pan/Zoom, snap-to-grid, connections, minimap, background grid.',
+    file:'src/components/map-mode/MapCanvas.tsx', phase:1,
+    deps:['ScreenNode','useFunnelStore'], tags:['@xyflow/react','ReactFlow'] },
+  { id:'ScreenNode', label:'ScreenNode', icon:'📱', group:'map', color:'#4f7cff',
+    desc:'Нода-телефон на карте. Toolbar (Copy/Dup/Del), type badge, порядковый номер.',
+    file:'src/components/map-mode/ScreenNode.tsx', phase:1, deps:['useFunnelStore'] },
+
+  // ── MANAGER MODE ──
+  { id:'ManagerView', label:'ManagerView', icon:'📋', group:'manager', color:'#4f7cff',
+    desc:'Режим менеджера. Left: ScreenList + Locale switcher. Center: Preview/Translations/Payments tabs. Right: Status.',
+    file:'src/components/manager-mode/ManagerView.tsx', phase:4, deps:[] },
+
+  // ── DEVELOPER MODE ──
+  { id:'DeveloperView', label:'DeveloperView', icon:'💻', group:'developer', color:'#4f7cff',
+    desc:'Режим разработчика. Monaco Editor + FileExplorer + LivePreview + Console.',
+    file:'src/components/developer-mode/DeveloperView.tsx', phase:4, deps:[] },
+
+  // ── PANELS ──
+  { id:'BlockLibrary', label:'BlockLibrary', icon:'🧩', group:'panels', color:'#4f7cff',
+    desc:'Библиотека блоков с поиском и категориями. Drag source для дроп на экран.',
+    file:'src/components/panels/BlockLibrary.tsx', phase:2, deps:[] },
+  { id:'ScreenList', label:'ScreenList', icon:'📜', group:'panels', color:'#4f7cff',
+    desc:'Список экранов воронки. Клик → selectScreen. Manager mode left panel.',
+    file:'src/components/panels/ScreenList.tsx', phase:1, deps:['useFunnelStore'] },
+  { id:'FileExplorer', label:'FileExplorer', icon:'📁', group:'panels', color:'#4f7cff',
+    desc:'Файловый обозреватель для Developer mode.',
+    file:'src/components/panels/FileExplorer.tsx', phase:4, deps:[] },
+  { id:'ScreenProperties', label:'ScreenProperties', icon:'⚙', group:'panels', color:'#4f7cff',
+    desc:'Свойства выбранного экрана: General, Navigation, Appearance.',
+    file:'src/components/panels/ScreenProperties.tsx', phase:1, deps:[] },
+  { id:'ElementProperties', label:'ElementProperties', icon:'🔧', group:'panels', color:'#4f7cff',
+    desc:'Свойства выбранного элемента.',
+    file:'src/components/panels/ElementProperties.tsx', phase:2, deps:[] },
+  { id:'FunnelSettings', label:'FunnelSettings', icon:'🎛', group:'panels', color:'#4f7cff',
+    desc:'Глобальные настройки воронки: имя, стартовый экран, язык, CSS-переменные.',
+    file:'src/components/panels/FunnelSettings.tsx', phase:1, deps:['useFunnelStore'] },
+
+  // ── SHARED ──
+  { id:'ColorPicker', label:'ColorPicker', icon:'🎨', group:'shared', color:'#636882',
+    desc:'Нативный color input с label и образцом цвета.', file:'src/components/shared/ColorPicker.tsx', phase:2, deps:[] },
+  { id:'NumberInput', label:'NumberInput', icon:'🔢', group:'shared', color:'#636882',
+    desc:'Числовой инпут с ± кнопками, min/max/step, unit.', file:'src/components/shared/NumberInput.tsx', phase:2, deps:[] },
+  { id:'ToggleSwitch', label:'ToggleSwitch', icon:'🔘', group:'shared', color:'#636882',
+    desc:'Toggle switch (checkbox styled). checked/disabled.', file:'src/components/shared/ToggleSwitch.tsx', phase:2, deps:[] },
+  { id:'Accordion', label:'Accordion', icon:'🪗', group:'shared', color:'#636882',
+    desc:'Collapsible section с ChevronDown. grid-template-rows transition.', file:'src/components/shared/Accordion.tsx', phase:2, deps:[] },
+  { id:'Modal', label:'Modal', icon:'🪟', group:'shared', color:'#636882',
+    desc:'Modal через createPortal. Клик по фону, Escape.', file:'src/components/shared/Modal.tsx', phase:2, deps:[] },
+  { id:'Tooltip', label:'Tooltip', icon:'💬', group:'shared', color:'#636882',
+    desc:'Tooltip hover/focus, 4 позиции.', file:'src/components/shared/Tooltip.tsx', phase:2, deps:[] },
+  { id:'SearchInput', label:'SearchInput', icon:'🔍', group:'shared', color:'#636882',
+    desc:'Search input с иконкой lucide.', file:'src/components/shared/SearchInput.tsx', phase:2, deps:[] },
+
+  // ── STORE ──
+  { id:'useFunnelStore', label:'useFunnelStore', icon:'🏛', group:'store', color:'#22d3a0',
+    desc:'Корневой Zustand store. Собирает funnel-slice + ui-slice + history-slice. Единая точка доступа.',
+    file:'src/store/funnel-store.ts', phase:1, deps:['funnel-slice','ui-slice','history-slice','defaults'],
+    tags:['zustand','immer'] },
+  { id:'funnel-slice', label:'funnel-slice', icon:'🎯', group:'store', color:'#22d3a0',
+    desc:'Slice: screens, elements, connections. undoableUpdate через Immer produceWithPatches.',
+    file:'src/store/slices/funnel-slice.ts', phase:1, deps:[], tags:['immer','nanoid'] },
+  { id:'ui-slice', label:'ui-slice', icon:'🖥', group:'store', color:'#22d3a0',
+    desc:'Slice: mode, selection, panels, pan/zoom, preview. Не попадает в undo.',
+    file:'src/store/slices/ui-slice.ts', phase:1, deps:[] },
+  { id:'history-slice', label:'history-slice', icon:'🕐', group:'store', color:'#22d3a0',
+    desc:'Slice: undo/redo (applyPatches), clipboard, project I/O, createNewProject.',
+    file:'src/store/slices/history-slice.ts', phase:1, deps:['defaults','funnel-slice'] },
+  { id:'defaults', label:'defaults', icon:'📄', group:'store', color:'#22d3a0',
+    desc:'createDefaultProject, createDefaultScreen — начальное состояние.',
+    file:'src/store/defaults.ts', phase:1, deps:[] },
+  { id:'persist-mw', label:'middleware/persist', icon:'💾', group:'store', color:'#22d3a0',
+    desc:'localStorage для UI prefs (ширины панелей, тема). IndexedDB через Dexie.js — Phase 2.',
+    file:'src/store/middleware/persist.ts', phase:2, deps:[] },
+
+  // ── HOOKS ──
+  { id:'useKeyboardShortcuts', label:'useKeyboardShortcuts', icon:'⌨', group:'hooks', color:'#f5c842',
+    desc:'Ctrl+Z/Y, Ctrl+D, 1/2/3 mode switch, Escape. window keydown listener.',
+    file:'src/hooks/useKeyboardShortcuts.ts', phase:1, deps:['useFunnelStore'] },
+  { id:'useResizablePanel', label:'useResizablePanel', icon:'↔', group:'hooks', color:'#f5c842',
+    desc:'width, isResizing, onResizeStart. Кламп в min/max. Синхронизация с store.resizePanel.',
+    file:'src/hooks/useResizablePanel.ts', phase:1, deps:['useFunnelStore'] },
+  { id:'useAutoSave', label:'useAutoSave', icon:'💾', group:'hooks', color:'#f5c842',
+    desc:'Дебаунс 2s по project.updatedAt → saveProject(). Предотвращает зацикливание через ref.',
+    file:'src/hooks/useAutoSave.ts', phase:2, deps:['useFunnelStore'] },
+  { id:'useClipboard', label:'useClipboard', icon:'📋', group:'hooks', color:'#f5c842',
+    desc:'copy, paste, duplicate, hasClipboard. Обёртка над store clipboard actions.',
+    file:'src/hooks/useClipboard.ts', phase:2, deps:['useFunnelStore'] },
+  { id:'useContextMenu', label:'useContextMenu', icon:'🖱', group:'hooks', color:'#f5c842',
+    desc:'isOpen, position {x,y}, items, open(x,y), close. State для контекстного меню.',
+    file:'src/hooks/useContextMenu.ts', phase:2, deps:[] },
+  { id:'useUndoRedo', label:'useUndoRedo', icon:'↩', group:'hooks', color:'#f5c842',
+    desc:'undo, redo, canUndo, canRedo. Тонкая обёртка над store history.',
+    file:'src/hooks/useUndoRedo.ts', phase:1, deps:['useFunnelStore'] },
+  { id:'useTheme', label:'useTheme', icon:'🌙', group:'hooks', color:'#f5c842',
+    desc:'dark/light theme toggle. localStorage + data-theme на documentElement.',
+    file:'src/hooks/useTheme.ts', phase:2, deps:[] },
+
+  // ── SERVICES ──
+  { id:'html-parser', label:'html-parser', icon:'🔎', group:'services', color:'#b06fff',
+    desc:'HTML string → ParsedScreen (elements tree, rawCss). DOMParser, data-screen, рекурсивный обход.',
+    file:'src/services/html-parser.ts', phase:3, deps:[] },
+  { id:'html-generator', label:'html-generator', icon:'✏', group:'services', color:'#b06fff',
+    desc:'ParsedScreen → HTML string. Обратная операция: классы, атрибуты, void-теги.',
+    file:'src/services/html-generator.ts', phase:3, deps:['html-parser'] },
+  { id:'css-parser', label:'css-parser', icon:'🎨', group:'services', color:'#b06fff',
+    desc:'CSS string → CssRuleMap (Map<selector, {prop: value}>). Regex-парсинг, comma-selectors.',
+    file:'src/services/css-parser.ts', phase:3, deps:[] },
+  { id:'component-registry', label:'ComponentRegistry', icon:'📦', group:'services', color:'#b06fff',
+    desc:'register(), get(id), getByCategory(), getAllCategories(). Реестр компонентов библиотеки.',
+    file:'src/services/component-registry.ts', phase:3, deps:[] },
+  { id:'storage-service', label:'storage-service', icon:'🗃', group:'services', color:'#b06fff',
+    desc:'saveProject, loadProject, listProjects, deleteProject. localStorage → будущий IndexedDB/API.',
+    file:'src/services/storage-service.ts', phase:1, deps:[] },
+  { id:'export-service', label:'export-service', icon:'📤', group:'services', color:'#b06fff',
+    desc:'exportAsZip (JSZip) + exportAsSingleFile. CSS переменные + экраны + analytics head.',
+    file:'src/services/export-service.ts', phase:5, deps:[], tags:['jszip'] },
+
+  // ── UTILS ──
+  { id:'id-generator', label:'id-generator', icon:'🆔', group:'utils', color:'#ff8c42',
+    desc:'generateId(prefix) → prefix-nanoid8. generateScreenSlug(name) → slug.',
+    file:'src/utils/id-generator.ts', phase:1, deps:[], tags:['nanoid'] },
+  { id:'css-utils', label:'css-utils', icon:'🖌', group:'utils', color:'#ff8c42',
+    desc:'parseValue("16px") → {16,"px"}. formatValue(). hexToRgba("#fff", 0.5).',
+    file:'src/utils/css-utils.ts', phase:3, deps:[] },
+  { id:'html-utils', label:'html-utils', icon:'🧹', group:'utils', color:'#ff8c42',
+    desc:'sanitizeHtml(): удаляет <script> и on* атрибуты через regex.',
+    file:'src/utils/html-utils.ts', phase:3, deps:[] },
+  { id:'validation', label:'validation', icon:'✅', group:'utils', color:'#ff8c42',
+    desc:'isValidSlug, isValidUrl (try new URL), isValidColor (#hex | rgb | rgba).',
+    file:'src/utils/validation.ts', phase:1, deps:[] },
+
+  // ── TYPES ──
+  { id:'type-funnel', label:'funnel.ts', icon:'📐', group:'types', color:'#ff4f6a',
+    desc:'Funnel, Screen, FunnelElement, Connection, ConditionGroup, ABTestConfig, CSSVariableName.',
+    file:'src/types/funnel.ts', phase:1, deps:[] },
+  { id:'type-ui', label:'ui.ts', icon:'📐', group:'types', color:'#ff4f6a',
+    desc:'UIState, Mode, HistoryState, HistoryEntry, ClipboardData, DraggedItem, ManagerTab.',
+    file:'src/types/ui.ts', phase:1, deps:[] },
+  { id:'type-store', label:'store.ts', icon:'📐', group:'types', color:'#ff4f6a',
+    desc:'FunnelStore, AppState, FunnelActions, UIActions, HistoryActions, ClipboardActions, ProjectActions.',
+    file:'src/types/store.ts', phase:1, deps:[] },
+  { id:'type-project', label:'project.ts', icon:'📐', group:'types', color:'#ff4f6a',
+    desc:'ProjectDocument, AssetReference, AssetManifest.',
+    file:'src/types/project.ts', phase:1, deps:[] },
+  { id:'type-component', label:'component.ts', icon:'📐', group:'types', color:'#ff4f6a',
+    desc:'ComponentDefinition, ComponentMeta, ElementNode.',
+    file:'src/types/component.ts', phase:1, deps:[] },
+  { id:'type-i18n', label:'i18n.ts', icon:'📐', group:'types', color:'#ff4f6a',
+    desc:'Locale, TranslationEntry, SUPPORTED_LOCALES (19 языков).',
+    file:'src/types/i18n.ts', phase:1, deps:[] },
+
+  // ── SERVER ──
+  { id:'server', label:'server/index.js', icon:'🖧', group:'server', color:'#2dd4c0',
+    desc:'Express минимальный бэкенд. Порт 3001. Заглушка API (projects CRUD, translate).',
+    file:'server/index.js', phase:1, tags:['express','better-sqlite3','cors','helmet'], deps:[] },
+
+  // ── CONFIG ──
+  { id:'vite-config', label:'vite.config.ts', icon:'⚡', group:'config', color:'#636882',
+    desc:'Vite + React plugin. Алиасы @components, @store, @hooks, @services, @typedefs, @utils. Vitest happy-dom. Proxy /api → :3001.',
+    file:'vite.config.ts', phase:1, deps:[] },
+  { id:'global-css', label:'global.css', icon:'🎨', group:'config', color:'#636882',
+    desc:'Reset + CSS builder-переменные: --builder-bg, --builder-accent, --builder-panel и т.д.',
+    file:'src/styles/global.css', phase:1, deps:[] },
+  { id:'docker', label:'docker-compose.yml', icon:'🐳', group:'config', color:'#636882',
+    desc:'Frontend (nginx) + Backend (Express + SQLite). Профили dev/prod. Порты 5173, 3001.',
+    file:'docker-compose.yml', phase:1, deps:[] },
+];
+
+// ══════════════════════════════════════════════════════════
+//  LAYOUT — positions (x, y) по группам
+// ══════════════════════════════════════════════════════════
+
+const GROUPS = {
+  entry:     { x: 60,   y: 60,   label: 'Entry Points',   icon: '🚀', color: '#4f7cff', bColor: '#4f7cff20' },
+  layout:    { x: 380,  y: 60,   label: 'Layout',         icon: '🏗', color: '#4f7cff', bColor: '#4f7cff15' },
+  map:       { x: 380,  y: 360,  label: 'Map Mode',       icon: '🗺', color: '#4f7cff', bColor: '#4f7cff15' },
+  manager:   { x: 700,  y: 60,   label: 'Manager Mode',   icon: '📋', color: '#4f7cff', bColor: '#4f7cff15' },
+  developer: { x: 700,  y: 200,  label: 'Dev Mode',       icon: '💻', color: '#4f7cff', bColor: '#4f7cff15' },
+  panels:    { x: 700,  y: 360,  label: 'Panels',         icon: '🗂', color: '#4f7cff', bColor: '#4f7cff15' },
+  shared:    { x: 700,  y: 680,  label: 'Shared UI',      icon: '🔲', color: '#636882', bColor: '#63688215' },
+  store:     { x: 60,   y: 380,  label: 'Store (Zustand)', icon: '🏛', color: '#22d3a0', bColor: '#22d3a015' },
+  hooks:     { x: 60,   y: 700,  label: 'Hooks',          icon: '🪝', color: '#f5c842', bColor: '#f5c84215' },
+  services:  { x: 380,  y: 700,  label: 'Services',       icon: '⚙', color: '#b06fff', bColor: '#b06fff15' },
+  utils:     { x: 700,  y: 960,  label: 'Utils',          icon: '🛠', color: '#ff8c42', bColor: '#ff8c4215' },
+  types:     { x: 60,   y: 1000, label: 'Types',          icon: '📐', color: '#ff4f6a', bColor: '#ff4f6a15' },
+  server:    { x: 380,  y: 1000, label: 'Backend',        icon: '🖧', color: '#2dd4c0', bColor: '#2dd4c015' },
+  config:    { x: 700,  y: 1100, label: 'Config',         icon: '⚙', color: '#636882', bColor: '#63688215' },
+};
+
+// Key edges to draw (source → target)
+const EDGES = [
+  { from:'main', to:'App', label:'' },
+  { from:'App', to:'AppShell', label:'' },
+  { from:'App', to:'useKeyboardShortcuts', label:'' },
+  { from:'AppShell', to:'Header', label:'' },
+  { from:'AppShell', to:'LeftPanel', label:'' },
+  { from:'AppShell', to:'RightPanel', label:'' },
+  { from:'AppShell', to:'MapCanvas', label:'mode=map' },
+  { from:'AppShell', to:'ManagerView', label:'mode=mgr' },
+  { from:'AppShell', to:'DeveloperView', label:'mode=dev' },
+  { from:'LeftPanel', to:'BlockLibrary', label:'' },
+  { from:'LeftPanel', to:'ScreenList', label:'' },
+  { from:'LeftPanel', to:'FileExplorer', label:'' },
+  { from:'RightPanel', to:'ScreenProperties', label:'' },
+  { from:'RightPanel', to:'ElementProperties', label:'' },
+  { from:'RightPanel', to:'FunnelSettings', label:'' },
+  { from:'MapCanvas', to:'ScreenNode', label:'' },
+  { from:'useFunnelStore', to:'funnel-slice', label:'' },
+  { from:'useFunnelStore', to:'ui-slice', label:'' },
+  { from:'useFunnelStore', to:'history-slice', label:'' },
+  { from:'history-slice', to:'funnel-slice', label:'patches' },
+  { from:'html-parser', to:'html-generator', label:'reverse' },
+  { from:'export-service', to:'html-generator', label:'' },
+  { from:'storage-service', to:'useFunnelStore', label:'persist', dashed:true },
+  { from:'vite-config', to:'main', label:'build', dashed:true },
+];
+
+// ══════════════════════════════════════════════════════════
+//  RENDER
+// ══════════════════════════════════════════════════════════
+
+let pan = { x: 0, y: 0 };
+let scale = 1;
+let isDragging = false;
+let dragStart = { x: 0, y: 0 };
+let panStart = { x: 0, y: 0 };
+let selectedId = null;
+let hoveredId = null;
+let currentTab = 'arch';
+
+const viewport = document.getElementById('viewport');
+const canvas = document.getElementById('canvas');
+const nodesEl = document.getElementById('nodes');
+const edgesSvg = document.getElementById('edges-svg');
+const zoomLabel = document.getElementById('zoom-label');
+
+// Group → node DOM map
+const nodeEls = {};
+const nodePositions = {}; // {id: {x, y, w, h}}
+
+function renderAll() {
+  nodesEl.innerHTML = '';
+  edgesSvg.innerHTML = '';
+
+  const groupNodes = {};
+  NODES.forEach(n => {
+    if (!groupNodes[n.group]) groupNodes[n.group] = [];
+    groupNodes[n.group].push(n);
+  });
+
+  // Render groups + nodes
+  Object.entries(GROUPS).forEach(([key, g]) => {
+    const nodes = groupNodes[key] || [];
+    const el = document.createElement('div');
+    el.className = 'group';
+    el.style.left = g.x + 'px';
+    el.style.top = g.y + 'px';
+    el.style.borderColor = g.color + '40';
+    el.style.background = g.bColor;
+
+    const labelEl = document.createElement('div');
+    labelEl.className = 'group-label';
+    labelEl.style.color = g.color;
+
+    const iconEl = document.createElement('div');
+    iconEl.className = 'group-icon';
+    iconEl.style.background = g.color + '25';
+    iconEl.textContent = g.icon;
+
+    labelEl.appendChild(iconEl);
+    labelEl.appendChild(document.createTextNode(g.label));
+    el.appendChild(labelEl);
+
+    const inner = document.createElement('div');
+    inner.className = 'group-inner';
+    el.appendChild(inner);
+
+    nodes.forEach(n => {
+      const nd = document.createElement('div');
+      nd.className = 'node';
+      nd.id = 'node-' + n.id;
+      nd.style.background = n.color + '20';
+      nd.style.borderColor = n.color + '40';
+      nd.style.color = n.color;
+
+      nd.innerHTML = `
+        <span class="node-icon">${n.icon}</span>
+        <span class="node-label">${n.label}</span>
+        ${n.phase ? `<span class="node-badge phase-${n.phase}">P${n.phase}</span>` : ''}
+      `;
+
+      nd.addEventListener('click', e => { e.stopPropagation(); selectNode(n.id); });
+      nd.addEventListener('mouseenter', e => { showTooltip(n, e); hoveredId = n.id; highlightEdges(n.id); });
+      nd.addEventListener('mouseleave', () => { hideTooltip(); hoveredId = null; highlightEdges(null); });
+
+      inner.appendChild(nd);
+      nodeEls[n.id] = nd;
+    });
+
+    nodesEl.appendChild(el);
+  });
+
+  // After DOM is in, measure positions and draw edges
+  setTimeout(drawEdges, 50);
+  setTimeout(updateMinimap, 100);
+}
+
+function getNodeCenter(id) {
+  const el = nodeEls[id];
+  if (!el) return null;
+  const gr = el.closest('.group');
+  if (!gr) return null;
+  const gx = parseFloat(gr.style.left);
+  const gy = parseFloat(gr.style.top);
+  const nr = el.getBoundingClientRect();
+  const gr2 = gr.getBoundingClientRect();
+  const ox = nr.left - gr2.left + nr.width / 2;
+  const oy = nr.top - gr2.top + nr.height / 2;
+  return { x: gx + ox, y: gy + oy };
+}
+
+function drawEdges() {
+  edgesSvg.innerHTML = `
+    <defs>
+      <marker id="arr" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L6,3 z" fill="#636882" />
+      </marker>
+      <marker id="arr-hi" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
+        <path d="M0,0 L0,6 L6,3 z" fill="#4f7cff" />
+      </marker>
+    </defs>
+  `;
+
+  EDGES.forEach(e => {
+    const from = getNodeCenter(e.from);
+    const to = getNodeCenter(e.to);
+    if (!from || !to) return;
+
+    const dx = to.x - from.x;
+    const dy = to.y - from.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const mx = (from.x + to.x) / 2 + dy * 0.15;
+    const my = (from.y + to.y) / 2 - dx * 0.15;
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('class', 'edge');
+    path.setAttribute('data-from', e.from);
+    path.setAttribute('data-to', e.to);
+    path.setAttribute('stroke', '#4f7cff');
+    path.setAttribute('marker-end', 'url(#arr)');
+    path.setAttribute('d', `M${from.x},${from.y} Q${mx},${my} ${to.x},${to.y}`);
+    if (e.dashed) path.setAttribute('stroke-dasharray', '4 4');
+    edgesSvg.appendChild(path);
+
+    if (e.label && dist > 80) {
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      text.setAttribute('class', 'edge-label');
+      text.setAttribute('x', mx);
+      text.setAttribute('y', my - 4);
+      text.textContent = e.label;
+      edgesSvg.appendChild(text);
+    }
+  });
+}
+
+function highlightEdges(nodeId) {
+  document.querySelectorAll('.edge').forEach(e => {
+    if (!nodeId) {
+      e.classList.remove('highlighted');
+      e.style.stroke = '#4f7cff';
+    } else if (e.dataset.from === nodeId || e.dataset.to === nodeId) {
+      e.classList.add('highlighted');
+      e.style.stroke = '#4f7cff';
+    } else {
+      e.classList.remove('highlighted');
+      e.style.stroke = '#2d3245';
+    }
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+//  SELECTION & DETAIL
+// ══════════════════════════════════════════════════════════
+
+function selectNode(id) {
+  if (selectedId) nodeEls[selectedId]?.classList.remove('selected');
+  selectedId = id;
+  nodeEls[id]?.classList.add('selected');
+  showDetail(id);
+}
+
+function showDetail(id) {
+  const n = NODES.find(x => x.id === id);
+  if (!n) return;
+  const det = document.getElementById('detail');
+  document.getElementById('d-name').textContent = n.label;
+  document.getElementById('d-type').textContent = n.group.toUpperCase() + ' · ' + (n.file || '');
+  document.getElementById('d-desc').textContent = n.desc || '—';
+
+  const fileWrap = document.getElementById('d-file-wrap');
+  if (n.file) {
+    fileWrap.style.display = 'block';
+    document.getElementById('d-file').textContent = n.file;
+  } else {
+    fileWrap.style.display = 'none';
+  }
+
+  const depsWrap = document.getElementById('d-deps-wrap');
+  const depsEl = document.getElementById('d-deps');
+  const relDeps = (n.deps || []).filter(d => NODES.find(x => x.id === d));
+  if (relDeps.length) {
+    depsWrap.style.display = 'block';
+    depsEl.innerHTML = relDeps.map(d => {
+      const dep = NODES.find(x => x.id === d);
+      return `<span class="d-tag" onclick="selectNode('${d}')" style="cursor:pointer;color:${dep?.color || '#ccc'}">${dep?.label || d}</span>`;
+    }).join('');
+  } else {
+    depsWrap.style.display = 'none';
+  }
+
+  const phaseWrap = document.getElementById('d-phase-wrap');
+  if (n.phase) {
+    phaseWrap.style.display = 'block';
+    document.getElementById('d-phase').innerHTML = `<span class="phase phase-${n.phase}">Phase ${n.phase}</span> ${phaseDesc(n.phase)}`;
+  } else {
+    phaseWrap.style.display = 'none';
+  }
+
+  det.style.display = 'block';
+}
+
+function phaseDesc(p) {
+  const m = {1:'Фундамент (нед.1-2)',2:'Панели + DnD (нед.3-4)',3:'Парсер + Стили (нед.5-6)',4:'Режимы + i18n (нед.7-9)',5:'Export + Платёжки (нед.10-11)'};
+  return `<span style="color:var(--muted);font-size:11px">${m[p]||''}</span>`;
+}
+
+function closeDetail() {
+  document.getElementById('detail').style.display = 'none';
+  if (selectedId) nodeEls[selectedId]?.classList.remove('selected');
+  selectedId = null;
+  highlightEdges(null);
+}
+
+// ══════════════════════════════════════════════════════════
+//  TOOLTIP
+// ══════════════════════════════════════════════════════════
+
+const tip = document.getElementById('tooltip');
+
+function showTooltip(n, e) {
+  const tags = [...(n.tags || [])].map(t => `<span class="tag">${t}</span>`).join('');
+  tip.innerHTML = `
+    <h4 style="color:${n.color}">${n.icon} ${n.label}</h4>
+    <p>${n.desc || ''}</p>
+    ${tags ? `<div class="tags">${tags}</div>` : ''}
+  `;
+  tip.style.display = 'block';
+  moveTip(e);
+}
+
+function moveTip(e) {
+  let x = e.clientX + 16;
+  let y = e.clientY + 8;
+  if (x + 300 > window.innerWidth) x = e.clientX - 300;
+  if (y + 120 > window.innerHeight) y = e.clientY - 120;
+  tip.style.left = x + 'px';
+  tip.style.top = y + 'px';
+}
+
+function hideTooltip() {
+  tip.style.display = 'none';
+}
+
+// ══════════════════════════════════════════════════════════
+//  PAN / ZOOM
+// ══════════════════════════════════════════════════════════
+
+function applyTransform() {
+  canvas.style.transform = `translate(${pan.x}px, ${pan.y}px) scale(${scale})`;
+  zoomLabel.textContent = Math.round(scale * 100) + '%';
+  updateMinimapViewport();
+}
+
+viewport.addEventListener('mousedown', e => {
+  if (e.button === 1 || e.button === 0) {
+    isDragging = true;
+    dragStart = { x: e.clientX, y: e.clientY };
+    panStart = { x: pan.x, y: pan.y };
+    viewport.classList.add('grabbing');
+    e.preventDefault();
+  }
+});
+
+window.addEventListener('mousemove', e => {
+  if (isDragging) {
+    pan.x = panStart.x + (e.clientX - dragStart.x);
+    pan.y = panStart.y + (e.clientY - dragStart.y);
+    applyTransform();
+  }
+  if (hoveredId) moveTip(e);
+});
+
+window.addEventListener('mouseup', () => {
+  isDragging = false;
+  viewport.classList.remove('grabbing');
+});
+
+viewport.addEventListener('wheel', e => {
+  e.preventDefault();
+  const factor = e.deltaY < 0 ? 1.1 : 0.9;
+  const rect = viewport.getBoundingClientRect();
+  const mouseX = e.clientX - rect.left;
+  const mouseY = e.clientY - rect.top;
+
+  const newScale = Math.min(4, Math.max(0.15, scale * factor));
+  const scaleChange = newScale / scale;
+  pan.x = mouseX - scaleChange * (mouseX - pan.x);
+  pan.y = mouseY - scaleChange * (mouseY - pan.y);
+  scale = newScale;
+  applyTransform();
+}, { passive: false });
+
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey && e.key === '0') { e.preventDefault(); resetView(); }
+  if (e.key === 'Escape') closeDetail();
+});
+
+function resetView() {
+  pan = { x: 60, y: 60 };
+  scale = 0.7;
+  applyTransform();
+}
+
+viewport.addEventListener('click', e => {
+  if (e.target === viewport || e.target === canvas || e.target === nodesEl) closeDetail();
+});
+
+// ══════════════════════════════════════════════════════════
+//  MINIMAP
+// ══════════════════════════════════════════════════════════
+
+const mmCanvas = document.getElementById('mm-canvas');
+const mmCtx = mmCanvas.getContext('2d');
+const mmW = 180, mmH = 110;
+const CONTENT_W = 1200, CONTENT_H = 1300;
+
+function updateMinimap() {
+  mmCtx.clearRect(0, 0, mmW, mmH);
+  mmCtx.fillStyle = '#13151f';
+  mmCtx.fillRect(0, 0, mmW, mmH);
+
+  const sx = mmW / CONTENT_W;
+  const sy = mmH / CONTENT_H;
+
+  // Draw groups as blocks
+  Object.entries(GROUPS).forEach(([key, g]) => {
+    mmCtx.fillStyle = g.color + '30';
+    mmCtx.strokeStyle = g.color + '60';
+    mmCtx.lineWidth = 0.5;
+    const gw = 280, gh = 160;
+    mmCtx.fillRect(g.x * sx, g.y * sy, gw * sx, gh * sy);
+    mmCtx.strokeRect(g.x * sx, g.y * sy, gw * sx, gh * sy);
+  });
+
+  updateMinimapViewport();
+}
+
+function updateMinimapViewport() {
+  const vpEl = document.getElementById('minimap-viewport');
+  const vW = viewport.clientWidth;
+  const vH = viewport.clientHeight;
+
+  const sx = mmW / CONTENT_W;
+  const sy = mmH / CONTENT_H;
+
+  const visLeft = -pan.x / scale;
+  const visTop = (-pan.y - 48) / scale;
+  const visW = vW / scale;
+  const visH = vH / scale;
+
+  const l = Math.max(0, visLeft * sx);
+  const t = Math.max(0, visTop * sy);
+  const w = Math.min(mmW - l, visW * sx);
+  const h = Math.min(mmH - t, visH * sy);
+
+  vpEl.style.left = l + 'px';
+  vpEl.style.top = t + 'px';
+  vpEl.style.width = Math.max(4, w) + 'px';
+  vpEl.style.height = Math.max(4, h) + 'px';
+}
+
+// Click minimap to navigate
+document.getElementById('minimap').addEventListener('click', e => {
+  const rect = mmCanvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+  const cx = (mx / mmW) * CONTENT_W;
+  const cy = (my / mmH) * CONTENT_H;
+  pan.x = -cx * scale + viewport.clientWidth / 2;
+  pan.y = -cy * scale + viewport.clientHeight / 2;
+  applyTransform();
+});
+
+// ══════════════════════════════════════════════════════════
+//  SEARCH
+// ══════════════════════════════════════════════════════════
+
+function onSearch(val) {
+  const q = val.toLowerCase().trim();
+  NODES.forEach(n => {
+    const el = nodeEls[n.id];
+    if (!el) return;
+    const match = !q ||
+      n.label.toLowerCase().includes(q) ||
+      (n.desc || '').toLowerCase().includes(q) ||
+      (n.file || '').toLowerCase().includes(q) ||
+      (n.group || '').toLowerCase().includes(q) ||
+      (n.tags || []).some(t => t.toLowerCase().includes(q));
+    el.style.opacity = match ? '1' : '0.15';
+    el.style.pointerEvents = match ? 'auto' : 'none';
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+//  TABS
+// ══════════════════════════════════════════════════════════
+
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+
+  if (tab === 'arch') {
+    NODES.forEach(n => {
+      const el = nodeEls[n.id];
+      if (el) { el.style.opacity = '1'; el.style.pointerEvents = 'auto'; }
+    });
+  } else if (tab === 'stack') {
+    const techGroups = { components: 'React 19', store: 'Zustand + Immer', services: 'Vanilla TS', hooks: 'React Hooks', types: 'TypeScript strict', server: 'Express + SQLite', config: 'Vite 6' };
+    NODES.forEach(n => {
+      const el = nodeEls[n.id];
+      if (!el) return;
+      const inStack = ['store','services','utils','types','server','config'].includes(n.group);
+      el.style.opacity = '1';
+      el.style.pointerEvents = 'auto';
+    });
+  } else if (tab === 'phases') {
+    // highlight by phase
+    NODES.forEach(n => {
+      const el = nodeEls[n.id];
+      if (!el) return;
+      el.style.opacity = '1';
+      el.style.pointerEvents = 'auto';
+    });
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+
+renderAll();
+setTimeout(() => {
+  resetView();
+  updateMinimap();
+}, 100);
+
+// resize
+window.addEventListener('resize', () => { updateMinimap(); drawEdges(); });
+</script>
+</body>
+</html>

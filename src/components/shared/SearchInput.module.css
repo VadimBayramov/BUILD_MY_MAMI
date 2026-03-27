@@ -1,0 +1,37 @@
+.root {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.65rem;
+  background: var(--builder-bg);
+  border: 1px solid var(--builder-border);
+  border-radius: var(--builder-radius);
+  transition: var(--builder-transition);
+}
+
+.root:focus-within {
+  border-color: var(--builder-accent);
+}
+
+.icon {
+  flex-shrink: 0;
+  color: var(--builder-text-muted);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--builder-text);
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--builder-text-muted);
+}
+
+.input::-webkit-search-cancel-button {
+  appearance: none;
+}

@@ -1,0 +1,85 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--builder-text-muted);
+}
+
+.row {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--builder-border);
+  border-radius: var(--builder-radius);
+  overflow: hidden;
+  background: var(--builder-panel);
+  transition: var(--builder-transition);
+}
+
+.row:focus-within {
+  border-color: var(--builder-accent);
+}
+
+.btn {
+  width: 2rem;
+  flex-shrink: 0;
+  border: none;
+  background: var(--builder-panel-hover);
+  color: var(--builder-text);
+  font-size: 1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: var(--builder-transition);
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--builder-border);
+  color: var(--builder-accent);
+}
+
+.btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.field {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  padding: 0 0.5rem;
+  gap: 0.25rem;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  color: var(--builder-text);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  padding: 0.4rem 0;
+  outline: none;
+}
+
+.input::-webkit-outer-spin-button,
+.input::-webkit-inner-spin-button {
+  appearance: none;
+  margin: 0;
+}
+
+.input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.unit {
+  font-size: 0.75rem;
+  color: var(--builder-text-muted);
+  flex-shrink: 0;
+}

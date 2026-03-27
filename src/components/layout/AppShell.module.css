@@ -1,0 +1,33 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--builder-bg);
+}
+
+.body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.leftPanel,
+.rightPanel {
+  flex-shrink: 0;
+  background: var(--builder-panel);
+  border-right: 1px solid var(--builder-border);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.rightPanel {
+  border-right: none;
+  border-left: 1px solid var(--builder-border);
+}
+
+.canvas {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}

@@ -1,0 +1,39 @@
+.canvasWrap {
+  width: 100%;
+  height: 100%;
+  outline: none;
+}
+
+.canvasWrap :global(.react-flow__node) {
+  cursor: grab;
+}
+
+.canvasWrap :global(.react-flow__node):active {
+  cursor: grabbing;
+}
+
+.canvasWrap :global(.react-flow__controls button) {
+  background: var(--builder-panel);
+  color: var(--builder-text);
+  border: 1px solid var(--builder-border);
+  border-radius: 4px;
+  width: 28px;
+  height: 28px;
+}
+
+.canvasWrap :global(.react-flow__controls button:hover) {
+  background: var(--builder-panel-hover);
+}
+
+.canvasWrap :global(.react-flow__controls button svg) {
+  fill: var(--builder-text);
+}
+
+.zoomInfo {
+  font-size: 11px;
+  color: var(--builder-text-muted);
+  background: var(--builder-panel);
+  border: 1px solid var(--builder-border);
+  border-radius: 6px;
+  padding: 4px 10px;
+}

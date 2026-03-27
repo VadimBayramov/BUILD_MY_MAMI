@@ -1,0 +1,29 @@
+{
+  "app": {
+    "name": "FunnelBuilder",
+    "version": "0.1.0"
+  },
+  "modes": {
+    "map": "Map",
+    "manager": "Manager",
+    "developer": "Developer"
+  },
+  "actions": {
+    "save": "Save",
+    "export": "Export",
+    "preview": "Preview",
+    "undo": "Undo",
+    "redo": "Redo",
+    "delete": "Delete",
+    "duplicate": "Duplicate",
+    "copy": "Copy",
+    "paste": "Paste"
+  },
+  "panels": {
+    "blocks": "Blocks",
+    "properties": "Properties",
+    "screens": "Screens",
+    "settings": "Settings",
+    "styles": "Styles"
+  }
+}

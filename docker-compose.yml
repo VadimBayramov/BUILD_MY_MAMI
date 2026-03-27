@@ -1,0 +1,53 @@
+services:
+  # ─── Development server (Vite HMR) ───
+  app-dev:
+    build:
+      context: .
+      target: development
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./src:/app/src
+      - ./public:/app/public
+      - ./block-library:/app/block-library
+      - ./locales:/app/locales
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=${API_URL:-http://localhost:3001}
+    profiles:
+      - dev
+
+  # ─── Production build + nginx ───
+  app-prod:
+    build:
+      context: .
+      target: production
+    ports:
+      - "8080:80"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - api
+    profiles:
+      - prod
+
+  # ─── Backend API (заглушка) ───
+  api:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./server:/app
+      - api_node_modules:/app/node_modules
+    ports:
+      - "3001:3001"
+    command: ["sh", "-c", "npm install --production && node index.js"]
+    environment:
+      - PORT=3001
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:5173}
+      - DATABASE_URL=${DATABASE_URL:-sqlite:./data/funnel.db}
+    profiles:
+      - dev
+      - prod
+
+volumes:
+  api_node_modules:

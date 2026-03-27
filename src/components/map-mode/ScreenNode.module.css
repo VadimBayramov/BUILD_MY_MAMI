@@ -1,0 +1,141 @@
+.node {
+  position: relative;
+  cursor: grab;
+}
+
+.node:active {
+  cursor: grabbing;
+}
+
+.selected .phone {
+  box-shadow: 0 0 0 2px var(--builder-accent), 0 8px 24px rgba(59, 130, 246, 0.2);
+}
+
+.toolbar {
+  position: absolute;
+  top: -36px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2px;
+  background: var(--builder-panel);
+  border: 1px solid var(--builder-border);
+  border-radius: 8px;
+  padding: 4px;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.toolBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--builder-text-muted);
+  cursor: pointer;
+  transition: var(--builder-transition);
+}
+
+.toolBtn:hover {
+  background: var(--builder-panel-hover);
+  color: var(--builder-text);
+}
+
+.toolBtn.danger:hover {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--builder-error);
+}
+
+.phone {
+  width: 180px;
+  height: 320px;
+  background: #1a1d24;
+  border-radius: 20px;
+  border: 2px solid var(--builder-border);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: box-shadow 0.2s ease;
+}
+
+.statusBar {
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.notch {
+  width: 60px;
+  height: 6px;
+  background: var(--builder-border);
+  border-radius: 3px;
+}
+
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: linear-gradient(
+    180deg,
+    rgba(59, 130, 246, 0.05) 0%,
+    rgba(59, 130, 246, 0.02) 100%
+  );
+}
+
+.phoneIcon {
+  color: var(--builder-text-muted);
+  opacity: 0.4;
+}
+
+.screenLabel {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--builder-text);
+  text-align: center;
+  padding: 0 12px;
+  word-break: break-word;
+}
+
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0 0;
+}
+
+.typeBadge {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.orderNum {
+  font-size: 11px;
+  color: var(--builder-text-muted);
+}
+
+.handle {
+  width: 10px !important;
+  height: 10px !important;
+  background: var(--builder-accent) !important;
+  border: 2px solid var(--builder-panel) !important;
+  border-radius: 50% !important;
+}
+
+.handle:hover {
+  width: 14px !important;
+  height: 14px !important;
+}

@@ -1,0 +1,58 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--builder-text-muted);
+}
+
+.control {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  padding-left: 2.25rem;
+  background: var(--builder-panel);
+  border: 1px solid var(--builder-border);
+  border-radius: var(--builder-radius);
+  transition: var(--builder-transition);
+}
+
+.control:hover {
+  border-color: var(--builder-text-muted);
+}
+
+.swatch {
+  position: absolute;
+  left: 0.5rem;
+  top: 50%;
+  translate: 0 -50%;
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: calc(var(--builder-radius) * 0.5);
+  border: 1px solid var(--builder-border);
+  flex-shrink: 0;
+  pointer-events: none;
+}
+
+.input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.value {
+  font-size: 0.8125rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--builder-text);
+  font-family: ui-monospace, monospace;
+}

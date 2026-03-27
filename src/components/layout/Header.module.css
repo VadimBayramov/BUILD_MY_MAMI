@@ -1,0 +1,154 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 48px;
+  padding: 0 12px;
+  background: var(--builder-panel);
+  border-bottom: 1px solid var(--builder-border);
+  gap: 12px;
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.left, .right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.center {
+  display: flex;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logoIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--builder-accent);
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.funnelName {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--builder-text);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.modeTabs {
+  display: flex;
+  background: var(--builder-bg);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.modeTab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--builder-text-muted);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--builder-transition);
+  white-space: nowrap;
+}
+
+.modeTab:hover {
+  color: var(--builder-text);
+  background: var(--builder-panel-hover);
+}
+
+.modeTab.active {
+  color: white;
+  background: var(--builder-accent);
+}
+
+.iconBtn, .panelToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: var(--builder-radius);
+  background: transparent;
+  color: var(--builder-text-muted);
+  cursor: pointer;
+  transition: var(--builder-transition);
+}
+
+.iconBtn:hover, .panelToggle:hover {
+  background: var(--builder-panel-hover);
+  color: var(--builder-text);
+}
+
+.iconBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.iconBtn:disabled:hover {
+  background: transparent;
+  color: var(--builder-text-muted);
+}
+
+.addBtn, .exportBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: var(--builder-radius);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--builder-transition);
+  white-space: nowrap;
+}
+
+.addBtn {
+  background: var(--builder-accent);
+  color: white;
+}
+
+.addBtn:hover {
+  background: var(--builder-accent-hover);
+}
+
+.exportBtn {
+  background: var(--builder-panel-hover);
+  color: var(--builder-text);
+}
+
+.exportBtn:hover {
+  background: var(--builder-border);
+}
+
+.divider {
+  width: 1px;
+  height: 24px;
+  background: var(--builder-border);
+  margin: 0 4px;
+}

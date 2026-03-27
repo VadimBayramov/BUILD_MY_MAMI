@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Funnel Builder AI - Flexible & Fast</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #0f1115;
+            --bg-panel: #1a1d24;
+            --bg-panel-hover: #232730;
+            --accent: #3b82f6;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: #2d3139;
+        }
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            user-select: none;
+        }
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        .canvas {
+            background-color: var(--bg-dark);
+            background-image: radial-gradient(var(--border-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: 0 0;
+            position: relative;
+            overflow: hidden; /* We handle pan/zoom manually */
+            width: 100%;
+            height: 100%;
+            cursor: grab;
+        }
+        .canvas:active { cursor: grabbing; }
+        .canvas-inner {
+            position: absolute;
+            top: 0; left: 0;
+            transform-origin: 0 0;
+        }
+        
+        .panel {
+            background-color: var(--bg-panel);
+            border-right: 1px solid var(--border-color);
+            border-left: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            z-index: 50;
+            position: relative;
+        }
+
+        /* Resizer handle */
+        .resizer {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            cursor: col-resize;
+            z-index: 60;
+        }
+        .resizer:hover { background: rgba(59,130,246,0.5); }
+        .resizer.left { right: -4px; }
+        .resizer.right { left: -4px; }
+
+        /* Map Node - Phone Shaped */
+        .screen-node-container {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            z-index: 10;
+        }
+        
+        .screen-title {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .screen-node {
+            width: 375px;
+            height: 812px;
+            background: #fff;
+            border-radius: 40px;
+            box-shadow: 0 0 0 12px #000000, 0 25px 50px -12px rgba(0,0,0,0.5);
+            cursor: grab;
+            border: 4px solid transparent;
+            transition: border-color 0.2s, box-shadow 0.2s, transform 0.1s;
+            display: flex;
+            flex-direction: column;
+            color: #000;
+            overflow-y: auto;
+            position: relative;
+        }
+        .screen-node::-webkit-scrollbar { display: none; }
+        .screen-node:active { cursor: grabbing; box-shadow: 0 0 0 12px #000000, 0 35px 60px -12px rgba(0, 0, 0, 0.7); z-index: 11; }
+        .screen-node.selected { border-color: var(--accent); box-shadow: 0 0 0 12px #000000, 0 0 0 16px rgba(59,130,246,0.5); }
+        
+        .notch {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 150px;
+            height: 25px;
+            background: #000;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            z-index: 100;
+        }
+        
+        /* Map Tools floating */
+        .node-toolbar {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            gap: 4px;
+            padding: 4px;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.2s;
+            transform: scale(2.5); /* counter scale */
+            transform-origin: right bottom;
+        }
+        .screen-node-container:hover .node-toolbar,
+        .screen-node.selected ~ .node-toolbar {
+            opacity: 1;
+            visibility: visible;
+        }
+        .toolbar-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .toolbar-btn:hover { background: var(--bg-panel-hover); color: white; }
+        .toolbar-btn.danger:hover { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+        
+        /* Element in Editor */
+        .funnel-element {
+            position: relative;
+            border: 2px dashed transparent;
+            transition: all 0.2s;
+            cursor: pointer;
+            box-sizing: border-box;
+        }
+        .funnel-element:hover { border-color: #cbd5e1; }
+        .funnel-element.selected { border-color: var(--accent); background-color: rgba(59,130,246,0.05); }
+        
+        /* Drag & Drop */
+        .droppable { min-height: 100%; padding: 10px; box-sizing: border-box; }
+        .droppable.drag-over { background: rgba(59,130,246,0.1); border-radius: 30px; border: 4px dashed var(--accent); }
+        .drag-item { cursor: grab; padding: 12px; background: var(--bg-panel-hover); border-radius: 8px; font-size: 13px; display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-color); margin-bottom: 8px; transition: 0.2s; }
+        .drag-item:hover { border-color: var(--accent); transform: translateX(2px); }
+
+
+        /* UI Styling */
+        .input-group { margin-bottom: 12px; }
+        .input-group label { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .input-group input, .input-group select, .input-group textarea { width: 100%; box-sizing: border-box; background: var(--bg-dark); border: 1px solid var(--border-color); color: white; padding: 8px; border-radius: 6px; font-size: 12px; outline: none; }
+        .input-group input:focus, .input-group select:focus, .input-group textarea:focus { border-color: var(--accent); }
+        
+        .section-title { font-size: 12px; font-weight: 700; color: var(--text-muted); padding: 16px 16px 8px 16px; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid var(--border-color); margin-bottom: 8px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
+        .section-title:hover { color: white; }
+        
+        /* AI Badge */
+        .ai-badge { display: inline-flex; align-items: center; gap: 4px; background: rgba(16, 185, 129, 0.9); color: #fff; padding: 2px 6px; border-radius: 4px; font-size: 9px; font-weight: 700; border: 1px solid rgba(16, 185, 129, 1); text-transform: uppercase; }
+        
+        .align-btn { flex: 1; padding: 6px; border-radius: 4px; background: transparent; color: var(--text-muted); border: none; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; }
+        .align-btn:hover { background: rgba(255,255,255,0.05); }
+        .align-btn.active { background: var(--bg-panel-hover); color: white; box-shadow: inset 0 0 0 1px var(--border-color); }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useReducer, useCallback, useMemo } = React;
+
+        // --- ICONS ---
+        const Icon = ({ name, size = 16, className = "" }) => {
+            const iconRef = useRef(null);
+            useEffect(() => {
+                if (iconRef.current && window.lucide) {
+                    iconRef.current.innerHTML = '';
+                    const i = document.createElement('i');
+                    i.setAttribute('data-lucide', name);
+                    i.style.width = `${size}px`;
+                    i.style.height = `${size}px`;
+                    i.className = className;
+                    iconRef.current.appendChild(i);
+                    window.lucide.createIcons({ root: iconRef.current });
+                }
+            }, [name, size, className]);
+            return <span ref={iconRef} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}></span>;
+        };
+
+        // --- PREVIEW GENERATOR ---
+        const generatePreviewHTML = (state) => {
+            const startScreenId = state.funnel.startScreenId || Object.keys(state.screens)[0];
+            return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>${state.funnel.name} - Live Preview</title>
+    <style>
+        body { margin: 0; padding: 0; background: #f3f4f6; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; overflow-x: hidden; }
+        #app { width: 100%; max-width: 414px; background: #fff; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; overflow-x: hidden; display: flex; flex-direction: column; }
+        .element { box-sizing: border-box; flex-shrink: 0; }
+        .screen { display: none; animation: slideIn 0.3s cubic-flex; flex: 1; flex-direction: column; padding-top: 40px; padding-bottom: 40px; }
+        .screen.active { display: flex; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .survey-opt { padding: 16px; border: 1px solid #e5e7eb; border-radius: 12px; background: #f9fafb; font-weight: 500; display: flex; align-items: center; gap: 12px; cursor: pointer; margin-bottom: 10px; transition: 0.2s; }
+        .survey-opt:hover { border-color: #3b82f6; background: #eff6ff; }
+        .survey-opt .circle { width: 20px; height: 20px; border-radius: 50%; border: 2px solid #cbd5e1; }
+        
+        .option-card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; cursor: pointer; background: #fff; font-weight: bold; }
+        .option-card:hover { border-color: #3b82f6; }
+        .option-card img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        
+        button { cursor: pointer; transition: transform 0.1s, opacity 0.2s; }
+        button:active { transform: scale(0.98); }
+        button:hover { opacity: 0.9; }
+        
+        .hero-template { position: relative; width: 100%; height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; padding: 40px 20px; box-sizing: border-box; color: white; text-align: center; }
+        .hero-template img { position: absolute; top:0; left:0; width:100%; height:100%; object-fit: cover; z-index: -2; }
+        .hero-template .overlay { position: absolute; top:0; left:0; width:100%; height:100%; background: linear-gradient(to bottom, rgba(0,0,0,0) 40%, rgba(0,0,0,0.8) 100%); z-index: -1; }
+        
+    </style>
+</head>
+<body>
+    <div id="app"></div>
+    <script>
+        const state = ${JSON.stringify(state)};
+        const app = document.getElementById('app');
+        
+        function navigate(toId) {
+            document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+            const target = document.getElementById('screen-' + toId);
+            if(target) {
+                target.classList.add('active');
+                window.scrollTo(0,0);
+            }
+        }
+
+        function renderElement(elId, screenId) {
+            const el = state.elements[elId];
+            if(!el) return '';
+            
+            // Convert react style object to css string
+            const styleStr = Object.entries(el.styles || {}).map(([k,v]) => k.replace(/[A-Z]/g, m => '-' + m.toLowerCase()) + ':' + v).join(';');
+            
+            let content = '';
+            // Determine next screen for navigation buttons
+            const screenIds = Object.keys(state.screens);
+            const currIdx = screenIds.indexOf(screenId);
+            const nextId = screenIds[currIdx + 1];
+            const navAction = nextId ? "navigate('" + nextId + "')" : "alert('Funnel Completed! 🎉')";
+
+            if(el.type === 'heading') content = '<h1 style="margin:0; font-size:inherit; font-weight:inherit; text-align:inherit; color:inherit; font-family:inherit;">' + (el.props.text || '') + '</h1>';
+            else if(el.type === 'paragraph') content = '<p style="margin:0; font-size:inherit; color:inherit; text-align:inherit; font-family:inherit; line-height:inherit;">' + (el.props.text || '') + '</p>';
+            else if(el.type === 'image') content = '<img src="' + el.props.src + '" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;" />';
+            else if(el.type === 'button') {
+                content = '<button onclick="' + navAction + '" style="width:100%; height:100%; background:inherit; color:inherit; border:inherit; border-radius:inherit; font-size:inherit; font-weight:inherit; font-family:inherit;">' + el.props.text + '</button>';
+            }
+            else if(el.type === 'survey_options') {
+                content = (el.props.options || []).map(opt => '<div class="survey-opt" onclick="' + navAction + '"><div class="circle"></div>' + opt + '</div>').join('');
+            }
+            else if(el.type === 'option_card') {
+                content = '<div class="option-card" onclick="' + navAction + '"><span>' + el.props.label + '</span><img src="' + el.props.avatarSrc + '"/></div>';
+            }
+            else if(el.type === 'hero_template') {
+                content = '<div class="hero-template" style="margin:-40px -10px 0; width: calc(100% + 20px)"><img src="' + el.props.bgImage + '"><div class="overlay"></div><h1 style="font-size:36px; margin-bottom: 20px;">' + el.props.headline + '</h1><button onclick="' + navAction + '" style="background:#fff; color:#000; border:none; padding: 20px; border-radius:100px; font-weight:bold; font-size:18px;">' + el.props.ctaText + '</button></div>';
+            }
+            else if(el.type === 'paywall') {
+                content = '<div style="text-align:center"><div style="font-size:14px;font-weight:bold;color:#6b7280;text-transform:uppercase;letter-spacing:1px;">'+el.props.planName+'</div><div style="font-size:56px;font-weight:900;margin:15px 0;color:#111827;">'+el.props.price+'<span style="font-size:18px;color:#6b7280;font-weight:600;">'+el.props.period+'</span></div><ul style="text-align:left;padding:0 20px;font-size:15px;color:#4b5563;line-height:2.2;list-style:none;margin:30px 0;"><li><strong style="color:#10b981">✓</strong> Full Unlimited Access</li><li><strong style="color:#10b981">✓</strong> Cancel Anytime</li><li><strong style="color:#10b981">✓</strong> Premium AI Support</li></ul><button onclick="alert(\\'Stripe Checkout Opened 💳\\')" style="background:#000;color:#fff;padding:20px;border-radius:100px;font-weight:bold;font-size:18px;border:none;width:100%;box-shadow:0 10px 20px rgba(0,0,0,0.2);">Subscribe & Unlock</button></div>';
+            }
+            else if(el.type === 'spacer') { content = ''; }
+            
+            return '<div class="element" style="' + styleStr + '">' + content + '</div>';
+        }
+
+        Object.values(state.screens).forEach(screen => {
+            const sDiv = document.createElement('div');
+            sDiv.className = 'screen';
+            sDiv.id = 'screen-' + screen.id;
+            sDiv.innerHTML = '<div style="padding: 0 10px; display:flex; flex-direction:column; gap:0px;">' + screen.elements.map(eId => renderElement(eId, screen.id)).join('') + '</div>';
+            app.appendChild(sDiv);
+        });
+        
+        navigate('${startScreenId}');
+    <\/script>
+</body>
+</html>`;
+        };
+
+        // --- INITIAL DATA & SCHEMA ---
+        const generateId = () => Math.random().toString(36).substr(2, 9);
+
+        // Blocks with Folders
+        const BLOCK_LIBRARY = [
+            // Screens
+            { type: 'new_screen', folder: 'Screens', label: 'New Screen Node', icon: 'smartphone', defaultProps: {}, defaultStyles: {}, ai: {} },
+            
+            // Templates (from IQ / Web Folders)
+            { type: 'hero_template', folder: 'Web Templates', label: 'Hero Cover (Web1)', icon: 'layout-template', defaultProps: { headline: "Let's find the perfect match", bgImage: 'https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?q=80&w=2669&auto=format&fit=crop', ctaText: 'Get Started' }, defaultStyles: { width: '100%', margin: '0' }, ai: { role: 'hero_full', importance: 1, editable: true, contentType: 'template', tags: ['entry'] } },
+            { type: 'option_card', folder: 'Web Templates', label: 'Age/Option Card', icon: 'user', defaultProps: { label: '18-24', avatarSrc: 'https://i.pravatar.cc/100?img=1' }, defaultStyles: { width: '90%', margin: '10px auto' }, ai: { role: 'option_select', importance: 0.8, editable: true, contentType: 'interactive', tags: ['choice'] } },
+
+            // Text
+            { type: 'heading', folder: 'Content', label: 'Heading', icon: 'type', defaultProps: { text: 'Your Catchy Headline' }, defaultStyles: { fontSize: '28px', fontWeight: 'bold', textAlign: 'center', margin: '0 auto', padding: '10px', color: '#111827', width: '100%' }, ai: { role: 'hero_headline', importance: 1, editable: true, contentType: 'text', tags: ['value_prop'] } },
+            { type: 'paragraph', folder: 'Content', label: 'Paragraph', icon: 'align-left', defaultProps: { text: 'Add your descriptive text here to explain the value.' }, defaultStyles: { fontSize: '16px', lineHeight: '1.6', color: '#4b5563', margin: '0 auto', padding: '10px', textAlign: 'center', width: '100%' }, ai: { role: 'description', importance: 0.6, editable: true, contentType: 'text', tags: ['info'] } },
+            { type: 'image', folder: 'Content', label: 'Image', icon: 'image', defaultProps: { src: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop' }, defaultStyles: { width: '100%', height: '250px', borderRadius: '16px', margin: '10px auto' }, ai: { role: 'hero_image', importance: 0.8, editable: true, contentType: 'media', tags: ['visual'] } },
+            
+            // Interactive
+            { type: 'button', folder: 'Interactive', label: 'Primary CTA', icon: 'mouse-pointer-click', defaultProps: { text: 'Continue', action: 'next_screen' }, defaultStyles: { background: '#3b82f6', color: 'white', padding: '18px', borderRadius: '100px', width: '90%', fontSize: '18px', fontWeight: 'bold', border: 'none', margin: '15px auto', textAlign: 'center', display: 'block' }, ai: { role: 'cta_primary', importance: 1, editable: true, contentType: 'interactive', tags: ['conversion', 'action'] } },
+            { type: 'survey_options', folder: 'Interactive', label: 'Survey Options', icon: 'list-checks', defaultProps: { options: ['Option A', 'Option B', 'Option C'] }, defaultStyles: { display: 'flex', flexDirection: 'column', width: '90%', margin: '15px auto' }, ai: { role: 'qualification_survey', importance: 0.9, editable: true, contentType: 'form', collectsData: ['user_preference'], tags: ['qualification'] } },
+            { type: 'paywall', folder: 'Interactive', label: 'Paywall Card', icon: 'credit-card', defaultProps: { price: '$19.99', period: '/month', planName: 'Pro Plan' }, defaultStyles: { border: '2px solid #3b82f6', borderRadius: '24px', padding: '30px 20px', background: '#eff6ff', margin: '20px auto', width: '90%' }, ai: { role: 'price_anchor', importance: 1, editable: true, contentType: 'paywall', tags: ['pricing', 'monetization'] } },
+            
+            // Layout
+            { type: 'spacer', folder: 'Layout', label: 'Spacer', icon: 'move-vertical', defaultProps: {}, defaultStyles: { height: '40px', width: '100%' }, ai: { role: 'layout', importance: 0.1, editable: false, contentType: 'layout', tags: ['spacing'] } },
+        ];
+
+        const DEFAULT_STATE = {
+            funnel: { id: 'f_1', name: 'AI Onboarding', startScreenId: 's_1' },
+            screens: {
+                's_1': { id: 's_1', name: 'Web Intro', elements: ['e_hero'], x: 100, y: 150, ai: { purpose: 'welcome', tags: ['start'] } },
+                's_2': { id: 's_2', name: 'Age Selection', elements: ['e_h1', 'e_opt1', 'e_opt2', 'e_opt3'], x: 400, y: 150, ai: { purpose: 'survey', tags: ['qualification'] } },
+            },
+            elements: {
+                'e_hero': { id: 'e_hero', type: 'hero_template', props: { headline: "Let's find the perfect match for you!", bgImage: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?q=80&w=2459&auto=format&fit=crop', ctaText: 'Get Started' }, styles: { width: '100%', margin: '0' }, ai: { role: 'hero_full', tags: [] } },
+                
+                'e_h1': { id: 'e_h1', type: 'heading', props: { text: 'Choose your AI partner\'s age' }, styles: { fontSize: '24px', fontWeight: '800', margin: '40px auto 30px', textAlign: 'center', width: '90%' }, ai: { role: 'question', tags: [] } },
+                'e_opt1': { id: 'e_opt1', type: 'option_card', props: { label: '18-24', avatarSrc: 'https://i.pravatar.cc/150?img=1' }, styles: { width: '90%', margin: '10px auto' }, ai: { role: 'choice', tags: [] } },
+                'e_opt2': { id: 'e_opt2', type: 'option_card', props: { label: '25-34', avatarSrc: 'https://i.pravatar.cc/150?img=5' }, styles: { width: '90%', margin: '10px auto' }, ai: { role: 'choice', tags: [] } },
+                'e_opt3': { id: 'e_opt3', type: 'option_card', props: { label: '35-49', avatarSrc: 'https://i.pravatar.cc/150?img=9' }, styles: { width: '90%', margin: '10px auto' }, ai: { role: 'choice', tags: [] } },
+            },
+            ui: {
+                view: 'map',
+                selectedScreenId: null,
+                selectedElementId: null,
+                draggedBlockType: null,
+                leftWidth: 280,
+                rightWidth: 320,
+                mapPan: { x: 0, y: 0 },
+                mapScale: 1
+            },
+            foldersOpen: { 'Web Templates': true, 'Content': true, 'Interactive': true }
+        };
+
+        // Load from LocalStorage
+        const loadState = () => {
+            const saved = localStorage.getItem('funnelBuilderState');
+            if (saved) {
+                try {
+                    return JSON.parse(saved);
+                } catch(e) { console.error('Failed to parse saved state', e); }
+            }
+            return DEFAULT_STATE;
+        };
+
+        // --- STATE MANAGEMENT ---
+        function reducer(state, action) {
+            let newState = state;
+            switch (action.type) {
+                case 'SET_VIEW': newState = { ...state, ui: { ...state.ui, view: action.payload.view, selectedScreenId: action.payload.screenId || state.ui.selectedScreenId } }; break;
+                case 'SELECT_SCREEN': newState = { ...state, ui: { ...state.ui, selectedScreenId: action.payload, selectedElementId: null } }; break;
+                case 'SELECT_ELEMENT': newState = { ...state, ui: { ...state.ui, selectedElementId: action.payload, selectedScreenId: action.screenId || state.ui.selectedScreenId } }; break;
+                case 'UPDATE_SCREEN_POS':
+                    newState = { ...state, screens: { ...state.screens, [action.payload.id]: { ...state.screens[action.payload.id], x: action.payload.x, y: action.payload.y } } }; break;
+                case 'ADD_ELEMENT': {
+                    const elId = `e_${generateId()}`;
+                    const blockDef = BLOCK_LIBRARY.find(b => b.type === action.payload.type);
+                    const newElement = { id: elId, type: blockDef.type, props: { ...blockDef.defaultProps }, styles: { ...blockDef.defaultStyles }, ai: { ...blockDef.ai } };
+                    const screen = state.screens[action.payload.screenId];
+                    newState = { ...state, elements: { ...state.elements, [elId]: newElement }, screens: { ...state.screens, [action.payload.screenId]: { ...screen, elements: [...screen.elements, elId] } } };
+                    break;
+                }
+                case 'UPDATE_ELEMENT':
+                    newState = { ...state, elements: { ...state.elements, [action.payload.id]: { ...state.elements[action.payload.id], ...action.payload.updates } } }; break;
+                case 'DELETE_ELEMENT': {
+                    const screenId = action.payload.screenId;
+                    const elId = action.payload.elId;
+                    const screen = state.screens[screenId];
+                    const newElementsList = screen.elements.filter(id => id !== elId);
+                    const newElements = { ...state.elements };
+                    delete newElements[elId];
+                    newState = { ...state, elements: newElements, screens: { ...state.screens, [screenId]: { ...screen, elements: newElementsList } }, ui: { ...state.ui, selectedElementId: state.ui.selectedElementId === elId ? null : state.ui.selectedElementId } };
+                    break;
+                }
+                case 'DUPLICATE_ELEMENT': {
+                    const screenId = action.payload.screenId;
+                    const elId = action.payload.elId;
+                    const elToCopy = state.elements[elId];
+                    if(!elToCopy) break;
+                    const newElId = `e_${generateId()}`;
+                    const newElement = JSON.parse(JSON.stringify(elToCopy));
+                    newElement.id = newElId;
+                    const screen = state.screens[screenId];
+                    const elIndex = screen.elements.indexOf(elId);
+                    const newElementsList = [...screen.elements];
+                    newElementsList.splice(elIndex + 1, 0, newElId);
+                    newState = { ...state, elements: { ...state.elements, [newElId]: newElement }, screens: { ...state.screens, [screenId]: { ...screen, elements: newElementsList } }, ui: { ...state.ui, selectedElementId: newElId } };
+                    break;
+                }
+                case 'DELETE_SCREEN': {
+                    const screenId = action.payload;
+                    const screenToDel = state.screens[screenId];
+                    const newScreens = { ...state.screens };
+                    delete newScreens[screenId];
+                    const newElements = { ...state.elements };
+                    screenToDel.elements.forEach(elId => delete newElements[elId]);
+                    newState = { ...state, screens: newScreens, elements: newElements, ui: { ...state.ui, selectedScreenId: state.ui.selectedScreenId === screenId ? null : state.ui.selectedScreenId } };
+                    break;
+                }
+                case 'DUPLICATE_SCREEN': {
+                    const screenId = action.payload;
+                    const screenToCopy = state.screens[screenId];
+                    if(!screenToCopy) break;
+                    const newScreenId = `s_${generateId()}`;
+                    const newScreen = JSON.parse(JSON.stringify(screenToCopy));
+                    newScreen.id = newScreenId;
+                    newScreen.name = newScreen.name + ' (Copy)';
+                    newScreen.x += 400; // offset
+                    
+                    const newElements = { ...state.elements };
+                    const newElementIds = [];
+                    screenToCopy.elements.forEach(elId => {
+                        const el = state.elements[elId];
+                        const newElId = `e_${generateId()}`;
+                        newElements[newElId] = JSON.parse(JSON.stringify(el));
+                        newElements[newElId].id = newElId;
+                        newElementIds.push(newElId);
+                    });
+                    newScreen.elements = newElementIds;
+                    
+                    newState = { ...state, screens: { ...state.screens, [newScreenId]: newScreen }, elements: newElements, ui: { ...state.ui, selectedScreenId: newScreenId } };
+                    break;
+                }
+                case 'SET_CLIPBOARD': newState = { ...state, clipboard: action.payload }; break;
+                case 'PASTE_ELEMENT': {
+                    const screenId = action.payload.screenId;
+                    if(!state.clipboard || state.clipboard.type !== 'element') break;
+                    const newElId = `e_${generateId()}`;
+                    const newElement = JSON.parse(JSON.stringify(state.clipboard.data));
+                    newElement.id = newElId;
+                    const screen = state.screens[screenId];
+                    newState = { ...state, elements: { ...state.elements, [newElId]: newElement }, screens: { ...state.screens, [screenId]: { ...screen, elements: [...screen.elements, newElId] } }, ui: { ...state.ui, selectedElementId: newElId } };
+                    break;
+                }
+                case 'ADD_SCREEN': {
+                    const sId = `s_${generateId()}`;
+                    newState = { ...state, screens: { ...state.screens, [sId]: { id: sId, name: 'New Screen', elements: [], x: action.payload.x, y: action.payload.y, ai: { purpose: 'custom', tags: [] } } } }; break;
+                }
+                case 'SET_DRAGGED_BLOCK': newState = { ...state, ui: { ...state.ui, draggedBlockType: action.payload } }; break;
+                case 'UPDATE_UI': newState = { ...state, ui: { ...state.ui, ...action.payload } }; break;
+                case 'TOGGLE_FOLDER': newState = { ...state, foldersOpen: { ...state.foldersOpen, [action.payload]: !state.foldersOpen[action.payload] } }; break;
+                case 'RESET_STATE': newState = DEFAULT_STATE; break;
+                default: newState = state;
+            }
+            // Save to localStorage on every change
+            localStorage.setItem('funnelBuilderState', JSON.stringify(newState));
+            return newState;
+        }
+
+        const AppContext = React.createContext();
+
+        // --- RENDERERS ---
+        const ElementRenderer = ({ element }) => {
+            const { type, props, styles } = element;
+            
+            switch (type) {
+                case 'heading': return <h1 style={{...styles, fontFamily: 'inherit', margin: styles.margin || 0}}>{props.text}</h1>;
+                case 'paragraph': return <p style={{...styles, fontFamily: 'inherit', margin: styles.margin || 0}}>{props.text}</p>;
+                case 'image': return <img src={props.src} alt="img" style={{...styles, objectFit: 'cover'}} />;
+                case 'button': return <button style={{...styles, border: styles.border || 'none', fontFamily: 'inherit'}}>{props.text}</button>;
+                case 'spacer': return <div style={styles}></div>;
+                case 'survey_options': return (
+                    <div style={styles}>
+                        {(props.options||[]).map((opt, i) => (
+                            <div key={i} style={{ padding: '16px', border: '1px solid #e5e7eb', borderRadius: '12px', background: '#f9fafb', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+                                <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '2px solid #cbd5e1' }}></div>
+                                {opt}
+                            </div>
+                        ))}
+                    </div>
+                );
+                case 'option_card': return (
+                    <div style={{...styles, border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#fff', fontWeight: 'bold'}}>
+                        <span>{props.label}</span>
+                        <img src={props.avatarSrc} style={{width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover'}} />
+                    </div>
+                );
+                case 'hero_template': return (
+                    <div style={{...styles, position: 'relative', height: '100%', minHeight: '600px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', padding: '40px 20px', color: 'white', textAlign: 'center'}}>
+                        <img src={props.bgImage} style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0}} />
+                        <div style={{position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.8) 100%)', zIndex: 1}}></div>
+                        <div style={{position: 'relative', zIndex: 2}}>
+                            <h1 style={{fontSize: '36px', marginBottom: '20px'}}>{props.headline}</h1>
+                            <button style={{background: '#fff', color: '#000', border: 'none', padding: '20px', borderRadius: '100px', fontWeight: 'bold', fontSize: '18px', width: '100%'}}>{props.ctaText}</button>
+                        </div>
+                    </div>
+                );
+                case 'paywall': return (
+                    <div style={{...styles, display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                        <div style={{ fontSize: '14px', fontWeight: 'bold', textTransform: 'uppercase', color: '#6b7280', letterSpacing: '1px' }}>{props.planName}</div>
+                        <div style={{ fontSize: '48px', fontWeight: '900', margin: '15px 0', color: '#111827' }}>{props.price}<span style={{fontSize:'18px', color:'#6b7280', fontWeight:'600'}}>{props.period}</span></div>
+                        <ul style={{ textAlign: 'left', margin: '30px 0', padding: '0 20px', fontSize: '15px', color: '#4b5563', lineHeight: '2.2', listStyle: 'none', width: '100%', boxSizing: 'border-box' }}>
+                            <li><strong style={{color:'#10b981'}}>✓</strong> Full Access</li>
+                            <li><strong style={{color:'#10b981'}}>✓</strong> Cancel Anytime</li>
+                            <li><strong style={{color:'#10b981'}}>✓</strong> AI Support</li>
+                        </ul>
+                        <button style={{background:'#000', color:'#fff', padding:'20px', borderRadius:'100px', fontWeight:'bold', fontSize:'18px', border:'none', width:'100%'}}>Subscribe & Unlock</button>
+                    </div>
+                );
+                default: return <div style={styles}>Unknown: {type}</div>;
+            }
+        };
+
+        // --- COMPONENTS ---
+        
+        // 1. Map View Node (Full Phone on Map)
+        const ScreenNode = ({ screen, index, state, dispatch }) => {
+            const isSelected = state.ui.selectedScreenId === screen.id;
+            const [isDragOver, setIsDragOver] = useState(false);
+            
+            const handleMouseDown = (e) => {
+                e.stopPropagation();
+                dispatch({ type: 'SELECT_SCREEN', payload: screen.id });
+                
+                const startX = e.clientX;
+                const startY = e.clientY;
+                const initialX = screen.x;
+                const initialY = screen.y;
+                const scale = state.ui.mapScale;
+
+                const onMouseMove = (moveEvent) => {
+                    const dx = (moveEvent.clientX - startX) / scale;
+                    const dy = (moveEvent.clientY - startY) / scale;
+                    dispatch({ type: 'UPDATE_SCREEN_POS', payload: { id: screen.id, x: initialX + dx, y: initialY + dy } });
+                };
+
+                const onMouseUp = () => {
+                    document.removeEventListener('mousemove', onMouseMove);
+                    document.removeEventListener('mouseup', onMouseUp);
+                };
+
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onMouseUp);
+            };
+
+            const handleDrop = (e) => {
+                e.preventDefault();
+                setIsDragOver(false);
+                if (state.ui.draggedBlockType && state.ui.draggedBlockType !== 'new_screen') {
+                    dispatch({ type: 'ADD_ELEMENT', payload: { screenId: screen.id, type: state.ui.draggedBlockType } });
+                    dispatch({ type: 'SET_DRAGGED_BLOCK', payload: null });
+                }
+            };
+            
+            // Allow pasting element onto screen
+            useEffect(() => {
+                const handleKeyDown = (e) => {
+                    if(isSelected && !state.ui.selectedElementId) {
+                        if ((e.ctrlKey || e.metaKey) && e.key === 'v') {
+                            dispatch({ type: 'PASTE_ELEMENT', payload: { screenId: screen.id } });
+                        }
+                    }
+                };
+                document.addEventListener('keydown', handleKeyDown);
+                return () => document.removeEventListener('keydown', handleKeyDown);
+            }, [isSelected, state.ui.selectedElementId, state.clipboard]);
+
+            const hasHero = screen.elements.length > 0 && state.elements[screen.elements[0]]?.type === 'hero_template';
+
+            return (
+                <div className="screen-node-container" style={{ left: screen.x, top: screen.y }}>
+                    <div className="screen-title">
+                        {screen.name}
+                        <div className="ai-badge" title="AI Purpose Tag"><Icon name="bot" size={10}/> {screen.ai.purpose}</div>
+                    </div>
+                    
+                    <div 
+                        className={`screen-node ${isSelected ? 'selected' : ''}`}
+                        onMouseDown={handleMouseDown}
+                    >
+                        <div className="notch"></div>
+                        
+                        <div 
+                            className={`droppable ${isDragOver ? 'drag-over' : ''}`}
+                            onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                            onDragLeave={() => setIsDragOver(false)}
+                            onDrop={handleDrop}
+                            style={{ paddingTop: hasHero ? '0' : '40px', paddingBottom: '40px', minHeight: '100%', display: 'flex', flexDirection: 'column' }}
+                        >
+                            {screen.elements.length === 0 && (
+                                <div style={{ textAlign: 'center', padding: '100px 20px', color: '#9ca3af', border: '2px dashed #e5e7eb', margin: '20px', borderRadius: '20px' }}>
+                                    Drag elements here
+                                </div>
+                            )}
+                            {screen.elements.map(elId => {
+                                const el = state.elements[elId];
+                                if(!el) return null;
+                                const isElSelected = state.ui.selectedElementId === elId;
+                                return (
+                                    <div 
+                                        key={elId} 
+                                        className={`funnel-element ${isElSelected ? 'selected' : ''}`}
+                                        onClick={(e) => { e.stopPropagation(); dispatch({ type: 'SELECT_ELEMENT', payload: elId, screenId: screen.id }); }}
+                                    >
+                                        <ElementRenderer element={el} />
+                                        {isElSelected && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, border: '4px solid #3b82f6', borderRadius: el.styles.borderRadius || '0', pointerEvents: 'none', zIndex: 10 }}></div>}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                    
+                    {/* Screen Toolbar */}
+                    <div className="node-toolbar" onMouseDown={e=>e.stopPropagation()}>
+                        <button className="toolbar-btn" onClick={() => dispatch({type: 'DUPLICATE_SCREEN', payload: screen.id})} title="Duplicate Screen"><Icon name="copy" size={14}/></button>
+                        <button className="toolbar-btn danger" onClick={() => { if(confirm('Delete screen?')) dispatch({type: 'DELETE_SCREEN', payload: screen.id}); }} title="Delete Screen"><Icon name="trash-2" size={14}/></button>
+                    </div>
+                </div>
+            );
+        };
+
+        // 2. Map Canvas with Pan & Zoom
+        const MapCanvas = () => {
+            const { state, dispatch } = React.useContext(AppContext);
+            const canvasRef = useRef(null);
+            
+            const handleWheel = (e) => {
+                if(e.ctrlKey || e.metaKey) {
+                    e.preventDefault();
+                    const zoomSensitivity = 0.001;
+                    const delta = -e.deltaY * zoomSensitivity;
+                    let newScale = state.ui.mapScale * Math.exp(delta);
+                    newScale = Math.min(Math.max(0.2, newScale), 3);
+                    dispatch({ type: 'UPDATE_UI', payload: { mapScale: newScale } });
+                } else {
+                    // Pan with wheel (trackpad)
+                    dispatch({ type: 'UPDATE_UI', payload: { 
+                        mapPan: { x: state.ui.mapPan.x - e.deltaX, y: state.ui.mapPan.y - e.deltaY }
+                    }});
+                }
+            };
+
+            const handleMouseDown = (e) => {
+                if (e.target === canvasRef.current || e.target.classList.contains('canvas-inner')) {
+                    dispatch({ type: 'SELECT_SCREEN', payload: null });
+                    
+                    const startX = e.clientX;
+                    const startY = e.clientY;
+                    const initialPanX = state.ui.mapPan.x;
+                    const initialPanY = state.ui.mapPan.y;
+
+                    const onMouseMove = (moveEvent) => {
+                        dispatch({ type: 'UPDATE_UI', payload: { 
+                            mapPan: { x: initialPanX + (moveEvent.clientX - startX), y: initialPanY + (moveEvent.clientY - startY) }
+                        }});
+                    };
+
+                    const onMouseUp = () => {
+                        document.removeEventListener('mousemove', onMouseMove);
+                        document.removeEventListener('mouseup', onMouseUp);
+                    };
+
+                    document.addEventListener('mousemove', onMouseMove);
+                    document.addEventListener('mouseup', onMouseUp);
+                }
+            };
+
+            const handleDrop = (e) => {
+                e.preventDefault();
+                if (state.ui.draggedBlockType === 'new_screen') {
+                    const rect = canvasRef.current.getBoundingClientRect();
+                    // Calculate real position considering pan and zoom
+                    const x = (e.clientX - rect.left - state.ui.mapPan.x) / state.ui.mapScale;
+                    const y = (e.clientY - rect.top - state.ui.mapPan.y) / state.ui.mapScale;
+                    
+                    dispatch({ type: 'ADD_SCREEN', payload: { x: x - 75, y: y - 20 } }); // center node roughly
+                    dispatch({ type: 'SET_DRAGGED_BLOCK', payload: null });
+                }
+            };
+
+            // Set up wheel listener non-passive for preventDefault
+            useEffect(() => {
+                const el = canvasRef.current;
+                if(el) el.addEventListener('wheel', handleWheel, { passive: false });
+                return () => { if(el) el.removeEventListener('wheel', handleWheel); };
+            }, [state.ui.mapScale, state.ui.mapPan]);
+
+            return (
+                <div 
+                    className="canvas" 
+                    ref={canvasRef} 
+                    onMouseDown={handleMouseDown}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={handleDrop}
+                    style={{ backgroundPosition: `${state.ui.mapPan.x}px ${state.ui.mapPan.y}px`, backgroundSize: `${40 * state.ui.mapScale}px ${40 * state.ui.mapScale}px` }}
+                >
+                    <div 
+                        className="canvas-inner"
+                        style={{ transform: `translate(${state.ui.mapPan.x}px, ${state.ui.mapPan.y}px) scale(${state.ui.mapScale})`, width: '10000px', height: '10000px' }}
+                    >
+                        {/* Render curved connection lines */}
+                        <svg style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 0, overflow: 'visible' }}>
+                            {Object.values(state.screens).map((s, i, arr) => {
+                                if (i < arr.length - 1) {
+                                    const next = arr[i+1];
+                                    // Math for node size (150 width, 324 height) + title gap
+                                    const startX = s.x + 150; 
+                                    const startY = s.y + 162 + 30; // offset for title
+                                    const endX = next.x;
+                                    const endY = next.y + 162 + 30;
+                                    const cp1X = startX + Math.max(80, (endX - startX) / 2);
+                                    const cp1Y = startY;
+                                    const cp2X = endX - Math.max(80, (endX - startX) / 2);
+                                    const cp2Y = endY;
+                                    
+                                    return (
+                                        <g key={`edge-${s.id}`}>
+                                            <path 
+                                                d={`M ${startX} ${startY} C ${cp1X} ${cp1Y}, ${cp2X} ${cp2Y}, ${endX} ${endY}`}
+                                                fill="none" 
+                                                stroke="rgba(255,255,255,0.2)" 
+                                                strokeWidth="4"
+                                            />
+                                            <circle cx={endX} cy={endY} r="5" fill="var(--accent)" />
+                                        </g>
+                                    );
+                                }
+                                return null;
+                            })}
+                        </svg>
+                        
+                        {Object.values(state.screens).map((screen, index) => (
+                            <ScreenNode key={screen.id} screen={screen} index={index} state={state} dispatch={dispatch} />
+                        ))}
+                    </div>
+                    
+                    {/* Element Floating Toolbar */}
+                    {state.ui.selectedElementId && state.ui.selectedScreenId && (
+                        <div style={{
+                            position: 'absolute',
+                            top: 20,
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            background: 'var(--bg-panel)',
+                            border: '1px solid var(--border-color)',
+                            borderRadius: '8px',
+                            display: 'flex',
+                            gap: '4px',
+                            padding: '6px',
+                            zIndex: 200,
+                            boxShadow: '0 10px 20px rgba(0,0,0,0.5)'
+                        }}>
+                            <button className="toolbar-btn" onClick={() => dispatch({type: 'SET_CLIPBOARD', payload: {type: 'element', data: state.elements[state.ui.selectedElementId]}})} title="Copy Element"><Icon name="copy" size={16}/></button>
+                            <button className="toolbar-btn" onClick={() => dispatch({type: 'DUPLICATE_ELEMENT', payload: {screenId: state.ui.selectedScreenId, elId: state.ui.selectedElementId}})} title="Duplicate Element"><Icon name="files" size={16}/></button>
+                            <button className="toolbar-btn danger" onClick={() => dispatch({type: 'DELETE_ELEMENT', payload: {screenId: state.ui.selectedScreenId, elId: state.ui.selectedElementId}})} title="Delete Element"><Icon name="trash-2" size={16}/></button>
+                        </div>
+                    )}
+                    
+                    {/* Zoom Controls */}
+                    <div style={{ position: 'absolute', bottom: 20, right: 20, display: 'flex', gap: '8px', background: 'var(--bg-panel)', padding: '8px', borderRadius: '12px', border: '1px solid var(--border-color)', zIndex: 100 }}>
+                        <button onClick={() => dispatch({ type: 'UPDATE_UI', payload: { mapScale: Math.max(0.2, state.ui.mapScale - 0.2) } })} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '4px' }}><Icon name="zoom-out"/></button>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '12px', display: 'flex', alignItems: 'center', minWidth: '40px', justifyContent: 'center' }}>{Math.round(state.ui.mapScale * 100)}%</div>
+                        <button onClick={() => dispatch({ type: 'UPDATE_UI', payload: { mapScale: Math.min(3, state.ui.mapScale + 0.2) } })} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '4px' }}><Icon name="zoom-in"/></button>
+                        <button onClick={() => dispatch({ type: 'UPDATE_UI', payload: { mapScale: 1, mapPan: { x: 0, y: 0 } } })} style={{ background: 'transparent', border: 'none', color: 'white', cursor: 'pointer', padding: '4px', marginLeft: '4px', borderLeft: '1px solid var(--border-color)' }}><Icon name="maximize"/></button>
+                    </div>
+                </div>
+            );
+        };
+
+        // 3. Screen Editor (Phone Frame)
+        const ScreenEditor = () => {
+            const { state, dispatch } = React.useContext(AppContext);
+            const screen = state.screens[state.ui.selectedScreenId];
+            const [isDragOver, setIsDragOver] = useState(false);
+
+            if (!screen) return <div className="phone-wrapper" style={{color: 'var(--text-muted)'}}>Select a screen from Map View to edit</div>;
+
+            const handleDrop = (e) => {
+                e.preventDefault();
+                setIsDragOver(false);
+                if (state.ui.draggedBlockType && state.ui.draggedBlockType !== 'new_screen') {
+                    dispatch({ type: 'ADD_ELEMENT', payload: { screenId: screen.id, type: state.ui.draggedBlockType } });
+                    dispatch({ type: 'SET_DRAGGED_BLOCK', payload: null });
+                }
+            };
+
+            const hasHero = screen.elements.length > 0 && state.elements[screen.elements[0]]?.type === 'hero_template';
+
+            return (
+                <div className="phone-wrapper" onClick={() => dispatch({ type: 'SELECT_ELEMENT', payload: null, screenId: screen.id })}>
+                    <div 
+                        className="phone"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="notch"></div>
+                        <div 
+                            className={`droppable ${isDragOver ? 'drag-over' : ''}`}
+                            onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
+                            onDragLeave={() => setIsDragOver(false)}
+                            onDrop={handleDrop}
+                            style={{ paddingTop: hasHero ? '0' : '40px', paddingBottom: '40px', minHeight: '100%', display: 'flex', flexDirection: 'column' }}
+                        >
+                            {screen.elements.length === 0 && (
+                                <div style={{ textAlign: 'center', padding: '100px 20px', color: '#9ca3af', border: '2px dashed #e5e7eb', margin: '20px', borderRadius: '20px' }}>
+                                    Drag and drop elements here from the library
+                                </div>
+                            )}
+                            {screen.elements.map(elId => {
+                                const el = state.elements[elId];
+                                if(!el) return null;
+                                const isSelected = state.ui.selectedElementId === elId;
+                                return (
+                                    <div 
+                                        key={elId} 
+                                        className={`funnel-element ${isSelected ? 'selected' : ''}`}
+                                        onClick={(e) => { e.stopPropagation(); dispatch({ type: 'SELECT_ELEMENT', payload: elId, screenId: screen.id }); }}
+                                    >
+                                        <ElementRenderer element={el} />
+                                        {/* Overlay for selection border */}
+                                        {isSelected && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, border: '2px solid #3b82f6', borderRadius: el.styles.borderRadius || '0', pointerEvents: 'none', zIndex: 10 }}></div>}
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 4. Left Sidebar (Blocks & Folders)
+        const LeftSidebar = () => {
+            const { state, dispatch } = React.useContext(AppContext);
+            
+            const handleDragStart = (type) => { dispatch({ type: 'SET_DRAGGED_BLOCK', payload: type }); };
+
+            // Group blocks by folder
+            const folders = {};
+            BLOCK_LIBRARY.forEach(b => {
+                if(!folders[b.folder]) folders[b.folder] = [];
+                folders[b.folder].push(b);
+            });
+
+            return (
+                <div className="panel" style={{ width: state.ui.leftWidth, height: '100%', flexShrink: 0 }}>
+                    <div style={{ padding: '16px', borderBottom: '1px solid var(--border-color)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Icon name="blocks" /> Components
+                    </div>
+                    <div style={{ flex: 1, overflowY: 'auto' }}>
+                        
+                        {Object.entries(folders).map(([folderName, blocks]) => {
+                            const isOpen = state.foldersOpen[folderName];
+                            return (
+                                <div key={folderName}>
+                                    <div className="section-title" onClick={() => dispatch({type: 'TOGGLE_FOLDER', payload: folderName})}>
+                                        {folderName}
+                                        <Icon name={isOpen ? "chevron-down" : "chevron-right"} size={14} />
+                                    </div>
+                                    {isOpen && (
+                                        <div style={{ padding: '0 16px' }}>
+                                            {blocks.map(block => (
+                                                <div key={block.type} className="drag-item" draggable onDragStart={() => handleDragStart(block.type)}>
+                                                    <Icon name={block.icon} /> {block.label}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })}
+                        
+                        <div className="section-title" style={{ marginTop: '20px', cursor: 'default' }}>Storage Settings</div>
+                        <div style={{ padding: '0 16px 16px' }}>
+                            <button onClick={() => { if(confirm('Reset to default?')) dispatch({type: 'RESET_STATE'}); }} style={{ width: '100%', padding: '8px', background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)', borderRadius: '6px', cursor: 'pointer', fontSize: '12px' }}>
+                                Reset Builder State
+                            </button>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '8px', textAlign: 'center' }}>Autosaved to LocalStorage ⚡</div>
+                        </div>
+                    </div>
+                    
+                    {/* Resizer */}
+                    <div className="resizer left" onMouseDown={(e) => {
+                        const startX = e.clientX;
+                        const startWidth = state.ui.leftWidth;
+                        const onMove = (me) => dispatch({ type: 'UPDATE_UI', payload: { leftWidth: Math.max(200, Math.min(500, startWidth + (me.clientX - startX))) } });
+                        const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+                        document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
+                    }}></div>
+                </div>
+            );
+        };
+
+        // 5. Right Sidebar (Properties)
+        const RightSidebar = () => {
+            const { state, dispatch } = React.useContext(AppContext);
+            const element = state.ui.selectedElementId ? state.elements[state.ui.selectedElementId] : null;
+            const screen = state.ui.selectedScreenId ? state.screens[state.ui.selectedScreenId] : null;
+
+            const content = () => {
+                if (!element && !screen) {
+                    return (
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'var(--text-muted)' }}>
+                            <Icon name="mouse-pointer-2" size={32} className="mb-4 opacity-50" />
+                            <div style={{ textAlign: 'center' }}>Select an element or screen<br/>to edit properties.</div>
+                        </div>
+                    );
+                }
+
+                const updateElementStyle = (key, value) => { dispatch({ type: 'UPDATE_ELEMENT', payload: { id: element.id, updates: { styles: { ...element.styles, [key]: value } } } }); };
+                const updateElementProp = (key, value) => { dispatch({ type: 'UPDATE_ELEMENT', payload: { id: element.id, updates: { props: { ...element.props, [key]: value } } } }); };
+                const updateElementAI = (key, value) => { dispatch({ type: 'UPDATE_ELEMENT', payload: { id: element.id, updates: { ai: { ...element.ai, [key]: value } } } }); };
+
+                if (element) return (
+                    <>
+                        <div style={{ padding: '16px', borderBottom: '1px solid var(--border-color)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Icon name="settings-2" /> Element Settings
+                        </div>
+                        
+                        <div className="section-title">Content</div>
+                        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column' }}>
+                            {element.props.headline !== undefined && (
+                                <div className="input-group">
+                                    <label>Headline</label>
+                                    <textarea rows="2" value={element.props.headline} onChange={(e) => updateElementProp('headline', e.target.value)} />
+                                </div>
+                            )}
+                            {element.props.text !== undefined && (
+                                <div className="input-group">
+                                    <label>Text Content</label>
+                                    <textarea rows="3" value={element.props.text} onChange={(e) => updateElementProp('text', e.target.value)} />
+                                </div>
+                            )}
+                            {element.props.label !== undefined && (
+                                <div className="input-group">
+                                    <label>Label</label>
+                                    <input type="text" value={element.props.label} onChange={(e) => updateElementProp('label', e.target.value)} />
+                                </div>
+                            )}
+                            {element.props.src !== undefined && (
+                                <div className="input-group">
+                                    <label>Image URL</label>
+                                    <input type="text" value={element.props.src} onChange={(e) => updateElementProp('src', e.target.value)} />
+                                </div>
+                            )}
+                            {element.props.bgImage !== undefined && (
+                                <div className="input-group">
+                                    <label>Background Image URL</label>
+                                    <input type="text" value={element.props.bgImage} onChange={(e) => updateElementProp('bgImage', e.target.value)} />
+                                </div>
+                            )}
+                            {element.props.avatarSrc !== undefined && (
+                                <div className="input-group">
+                                    <label>Avatar URL</label>
+                                    <input type="text" value={element.props.avatarSrc} onChange={(e) => updateElementProp('avatarSrc', e.target.value)} />
+                                </div>
+                            )}
+                            {element.props.ctaText !== undefined && (
+                                <div className="input-group">
+                                    <label>Button Text</label>
+                                    <input type="text" value={element.props.ctaText} onChange={(e) => updateElementProp('ctaText', e.target.value)} />
+                                </div>
+                            )}
+                            {element.props.price !== undefined && (
+                                <div className="input-group">
+                                    <label>Price</label>
+                                    <input type="text" value={element.props.price} onChange={(e) => updateElementProp('price', e.target.value)} />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="section-title">Layout & Alignment</div>
+                        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column' }}>
+                            <div className="input-group">
+                                <label>Text Align</label>
+                                <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-dark)', padding: '4px', borderRadius: '6px' }}>
+                                    <button className={`align-btn ${element.styles.textAlign === 'left' ? 'active' : ''}`} onClick={() => updateElementStyle('textAlign', 'left')}><Icon name="align-left" size={14}/></button>
+                                    <button className={`align-btn ${element.styles.textAlign === 'center' ? 'active' : ''}`} onClick={() => updateElementStyle('textAlign', 'center')}><Icon name="align-center" size={14}/></button>
+                                    <button className={`align-btn ${element.styles.textAlign === 'right' ? 'active' : ''}`} onClick={() => updateElementStyle('textAlign', 'right')}><Icon name="align-right" size={14}/></button>
+                                </div>
+                            </div>
+                            <div className="input-group">
+                                <label>Container Alignment (Margin)</label>
+                                <div style={{ display: 'flex', gap: '4px', background: 'var(--bg-dark)', padding: '4px', borderRadius: '6px' }}>
+                                    <button className={`align-btn ${element.styles.margin?.includes('0 auto 0 0') ? 'active' : ''}`} onClick={() => updateElementStyle('margin', '10px auto 10px 0')} title="Align Left"><Icon name="layout-align-left" size={14}/></button>
+                                    <button className={`align-btn ${element.styles.margin?.includes('auto') && !element.styles.margin?.includes('0 0') ? 'active' : ''}`} onClick={() => updateElementStyle('margin', '10px auto')} title="Center"><Icon name="layout-align-center" size={14}/></button>
+                                    <button className={`align-btn ${element.styles.margin?.includes('0 0 0 auto') ? 'active' : ''}`} onClick={() => updateElementStyle('margin', '10px 0 10px auto')} title="Align Right"><Icon name="layout-align-right" size={14}/></button>
+                                </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '12px' }}>
+                                <div className="input-group" style={{ flex: 1 }}>
+                                    <label>Width</label>
+                                    <input type="text" value={element.styles.width || ''} onChange={(e) => updateElementStyle('width', e.target.value)} placeholder="100%" />
+                                </div>
+                                <div className="input-group" style={{ flex: 1 }}>
+                                    <label>Padding</label>
+                                    <input type="text" value={element.styles.padding || ''} onChange={(e) => updateElementStyle('padding', e.target.value)} placeholder="10px" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="section-title">Design</div>
+                        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column' }}>
+                            <div className="input-group">
+                                <label>Background Color</label>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <input type="color" style={{width: '40px', padding: 0, border: 'none', cursor: 'pointer', borderRadius: '4px'}} value={element.styles.background?.startsWith('#') ? element.styles.background : '#ffffff'} onChange={(e) => updateElementStyle('background', e.target.value)} />
+                                    <input type="text" value={element.styles.background || ''} onChange={(e) => updateElementStyle('background', e.target.value)} placeholder="#ffffff or transparent" />
+                                </div>
+                            </div>
+                            <div className="input-group">
+                                <label>Text Color</label>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                    <input type="color" style={{width: '40px', padding: 0, border: 'none', cursor: 'pointer', borderRadius: '4px'}} value={element.styles.color?.startsWith('#') ? element.styles.color : '#000000'} onChange={(e) => updateElementStyle('color', e.target.value)} />
+                                    <input type="text" value={element.styles.color || ''} onChange={(e) => updateElementStyle('color', e.target.value)} placeholder="#000000" />
+                                </div>
+                            </div>
+                            <div className="input-group">
+                                <label>Font Size</label>
+                                <input type="text" value={element.styles.fontSize || ''} onChange={(e) => updateElementStyle('fontSize', e.target.value)} placeholder="16px" />
+                            </div>
+                            <div className="input-group">
+                                <label>Border Radius</label>
+                                <input type="text" value={element.styles.borderRadius || ''} onChange={(e) => updateElementStyle('borderRadius', e.target.value)} placeholder="12px" />
+                            </div>
+                        </div>
+
+                        <div className="section-title" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            AI Engine Metadata <Icon name="sparkles" size={14} className="text-emerald-500" />
+                        </div>
+                        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', background: 'rgba(16, 185, 129, 0.03)' }}>
+                            <div className="input-group">
+                                <label>Semantic Role</label>
+                                <input type="text" value={element.ai.role || ''} onChange={(e) => updateElementAI('role', e.target.value)} />
+                            </div>
+                            <div className="input-group">
+                                <label>AI Tags (comma sep)</label>
+                                <input type="text" value={element.ai.tags?.join(', ') || ''} onChange={(e) => updateElementAI('tags', e.target.value.split(',').map(s=>s.trim()))} />
+                            </div>
+                        </div>
+                    </>
+                );
+
+                return (
+                    <>
+                        <div style={{ padding: '16px', borderBottom: '1px solid var(--border-color)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <Icon name="layout-template" /> Screen Setup
+                        </div>
+                        <div className="section-title">Screen Meta</div>
+                        <div style={{ padding: '16px', display: 'flex', flexDirection: 'column' }}>
+                            <div className="input-group">
+                                <label>Screen Name</label>
+                                <input type="text" value={screen.name} onChange={(e) => dispatch({type: 'UPDATE_SCREEN_POS', payload: {id: screen.id, x: screen.x, y: screen.y, updates: {name: e.target.value}}})} />
+                            </div>
+                        </div>
+                    </>
+                );
+            };
+
+            return (
+                <div className="panel" style={{ width: state.ui.rightWidth, height: '100%', flexShrink: 0 }}>
+                    {/* Resizer */}
+                    <div className="resizer right" onMouseDown={(e) => {
+                        const startX = e.clientX;
+                        const startWidth = state.ui.rightWidth;
+                        const onMove = (me) => dispatch({ type: 'UPDATE_UI', payload: { rightWidth: Math.max(200, Math.min(500, startWidth - (me.clientX - startX))) } });
+                        const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+                        document.addEventListener('mousemove', onMove); document.addEventListener('mouseup', onUp);
+                    }}></div>
+                    
+                    <div style={{ flex: 1, overflowY: 'auto' }}>
+                        {content()}
+                    </div>
+                </div>
+            );
+        };
+
+        // 6. Header
+        const Header = () => {
+            const { state, dispatch } = React.useContext(AppContext);
+            
+            const handlePreview = () => {
+                const htmlContent = generatePreviewHTML(state);
+                const blob = new Blob([htmlContent], { type: 'text/html' });
+                const url = URL.createObjectURL(blob);
+                window.open(url, '_blank');
+            };
+
+            return (
+                <div style={{ height: '60px', background: 'var(--bg-panel)', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', padding: '0 20px', justifyContent: 'space-between', zIndex: 100, position: 'relative' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', fontWeight: 'bold', fontSize: '16px', letterSpacing: '0.5px' }}>
+                        <div style={{ background: 'var(--text-main)', color: 'var(--bg-dark)', width: '32px', height: '32px', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <Icon name="triangle" />
+                        </div>
+                        Funnel Builder AI
+                    </div>
+                    
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                        <button onClick={handlePreview} style={{ padding: '8px 16px', borderRadius: '8px', background: 'transparent', color: 'white', border: '1px solid var(--border-color)', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.background='var(--bg-panel-hover)'} onMouseOut={e=>e.currentTarget.style.background='transparent'}>
+                            <Icon name="external-link" size={14}/> Live Preview
+                        </button>
+                        <button style={{ padding: '8px 20px', borderRadius: '8px', background: 'var(--text-main)', color: 'var(--bg-dark)', border: 'none', cursor: 'pointer', fontSize: '13px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px', transition: '0.2s' }} onMouseOver={e=>e.currentTarget.style.opacity='0.9'} onMouseOut={e=>e.currentTarget.style.opacity='1'}>
+                            <Icon name="download" size={14}/> Export Code
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- MAIN APP ---
+        const App = () => {
+            // Initialize with saved state
+            const [state, dispatch] = useReducer(reducer, loadState());
+
+            return (
+                <AppContext.Provider value={{ state, dispatch }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', width: '100vw' }}>
+                        <Header />
+                        <div style={{ display: 'flex', flex: 1, overflow: 'hidden' }}>
+                            <LeftSidebar />
+                            <div style={{ flex: 1, position: 'relative' }}>
+                                <MapCanvas />
+                            </div>
+                            <RightSidebar />
+                        </div>
+                    </div>
+                </AppContext.Provider>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
