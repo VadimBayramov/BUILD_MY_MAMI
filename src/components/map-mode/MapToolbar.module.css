@@ -1,0 +1,42 @@
+.toolbar {
+  display: flex;
+  gap: 4px;
+  background: var(--builder-panel);
+  border: 1px solid var(--builder-border);
+  border-radius: 8px;
+  padding: 4px;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--builder-text-muted);
+  font-size: 11px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--builder-transition);
+}
+
+.btn:hover {
+  background: var(--builder-panel-hover);
+  color: var(--builder-text);
+}
+
+.btn.active {
+  background: var(--builder-accent);
+  color: #fff;
+}
+
+.btn.active:hover {
+  background: var(--builder-accent-hover);
+}
+
+.label {
+  line-height: 1;
+}

@@ -267,6 +267,16 @@ export interface ElementIndexes {
   byParent: Record<string, string[]>;
 }
 
+export interface Block {
+  id: string;
+  label: string;
+  color: string;
+  screenIds: string[];
+  position: { x: number; y: number };
+  width: number;
+  height: number;
+}
+
 export interface Funnel {
   schemaVersion: number;
   meta: FunnelMeta;
@@ -274,4 +284,5 @@ export interface Funnel {
   screens: Record<string, Screen>;
   elements: Record<string, FunnelElement>;
   connections: Connection[];
+  blocks: Block[];
 }

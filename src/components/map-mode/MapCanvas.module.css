@@ -29,6 +29,12 @@
   fill: var(--builder-text);
 }
 
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .zoomInfo {
   font-size: 11px;
   color: var(--builder-text-muted);

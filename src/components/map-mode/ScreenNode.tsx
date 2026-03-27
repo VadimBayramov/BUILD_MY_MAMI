@@ -29,12 +29,16 @@ const SCREEN_TYPE_COLORS: Record<string, string> = {
 export const ScreenNode = memo(function ScreenNode({ data, selected, id }: NodeProps) {
   const nodeData = data as ScreenNodeData;
   const typeColor = SCREEN_TYPE_COLORS[nodeData.screenType] ?? '#6b7280';
-  const duplicateScreen = useFunnelStore((s) => s.duplicateScreen);
-  const deleteScreen = useFunnelStore((s) => s.deleteScreen);
 
   return (
     <div className={`${styles.node} ${selected ? styles.selected : ''}`}>
       <Handle type="target" position={Position.Left} className={styles.handle} />
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="target-zone"
+        className={styles.handleZone}
+      />
 
       {selected && (
         <div className={styles.toolbar}>
@@ -46,7 +50,9 @@ export const ScreenNode = memo(function ScreenNode({ data, selected, id }: NodeP
             title="Duplicate"
             onClick={(e) => {
               e.stopPropagation();
-              duplicateScreen(id);
+              const store = useFunnelStore.getState();
+              store.selectScreen(id, false);
+              store.duplicate();
             }}
           >
             <Copy size={13} />
@@ -56,7 +62,7 @@ export const ScreenNode = memo(function ScreenNode({ data, selected, id }: NodeP
             title="Delete"
             onClick={(e) => {
               e.stopPropagation();
-              deleteScreen(id);
+              useFunnelStore.getState().deleteScreen(id);
             }}
           >
             <Trash2 size={13} />

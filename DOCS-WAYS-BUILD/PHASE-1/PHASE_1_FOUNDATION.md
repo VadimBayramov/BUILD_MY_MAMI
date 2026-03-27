@@ -131,17 +131,18 @@
 
 ### Шаг 7 — Undo/Redo + горячие клавиши
 
-Файлы:
+Файлы (ключевые):
 
-- `src/hooks/useKeyboardShortcuts.ts`
-- `src/store/history-store.ts`
+- `src/hooks/useKeyboardShortcuts.ts` — глобальный реестр шорткатов
+- `src/store/slices/history-slice.ts` — undo/redo, сохранение, буфер обмена
+- `src/store/slices/funnel-slice.ts` — undoable-мутации проекта (в т.ч. экраны и связи)
+- `src/App.tsx` — подключение хука шорткатов
 
-Что должно быть:
+**Полный перечень клавиш, карта зависимостей store и ссылки на документы** — в `PROGRESS.md`, раздел «✅ Шаг 7 — Undo/Redo + горячие клавиши (и расширения)» и блок «Файлы По Шагам» для шага 7. Доменная модель и связи экранов — в `DOCS_ARCHITECTURE.md`.
 
-- `Ctrl+Z`
-- `Ctrl+Shift+Z`
-- `Ctrl+Y`
-- `Ctrl+S`
+Минимально по плану:
+
+- `Ctrl+Z`, `Ctrl+Shift+Z`, `Ctrl+Y`, `Ctrl+S`
 
 Критерий готовности:
 

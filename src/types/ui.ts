@@ -19,6 +19,7 @@ export interface UIState {
   selectedElementIds: string[];
   draggedItem: DraggedItem | null;
   clipboard: ClipboardData | null;
+  linkMode: boolean;
   leftPanelWidth: number;
   rightPanelWidth: number;
   leftPanelCollapsed: boolean;

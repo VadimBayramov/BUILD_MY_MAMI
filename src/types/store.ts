@@ -3,6 +3,7 @@ import type {
   Screen,
   FunnelElement,
   Connection,
+  Block,
   GlobalStyles,
   CSSVariableName,
   ConditionGroup,
@@ -29,6 +30,7 @@ export interface FunnelActions {
 
   addScreen: (screen: Screen) => void;
   deleteScreen: (screenId: string) => void;
+  deleteScreens: (screenIds: string[]) => void;
   updateScreen: (screenId: string, updates: Partial<Screen>) => void;
   renameScreen: (oldSlug: string, newSlug: string) => void;
   moveScreen: (screenId: string, position: { x: number; y: number }) => void;
@@ -46,13 +48,19 @@ export interface FunnelActions {
   addConnection: (connection: Connection) => void;
   deleteConnection: (connectionId: string) => void;
   updateConnection: (connectionId: string, updates: Partial<Connection>) => void;
+
+  addBlock: (block: Block) => void;
+  deleteBlock: (blockId: string) => void;
+  updateBlock: (blockId: string, updates: Partial<Block>) => void;
 }
 
 export interface UIActions {
   setMode: (mode: Mode) => void;
   selectScreen: (screenId: string, multi?: boolean) => void;
   selectElement: (elementId: string, multi?: boolean) => void;
+  selectAllScreens: () => void;
   clearSelection: () => void;
+  setLinkMode: (enabled: boolean) => void;
   updatePan: (pan: { x: number; y: number }) => void;
   updateScale: (scale: number) => void;
   togglePanel: (side: 'left' | 'right') => void;
@@ -68,10 +76,12 @@ export interface HistoryActions {
   redo: () => void;
   canUndo: () => boolean;
   canRedo: () => boolean;
+  setMaxHistoryEntries: (max: number) => void;
 }
 
 export interface ClipboardActions {
   copy: () => void;
+  cut: () => void;
   paste: () => void;
   duplicate: () => void;
 }

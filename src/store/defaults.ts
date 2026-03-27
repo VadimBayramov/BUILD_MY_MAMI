@@ -93,6 +93,7 @@ export function createDefaultProject(): ProjectDocument {
       screens: { welcome: startScreen },
       elements: {},
       connections: [],
+      blocks: [],
     },
   };
 }

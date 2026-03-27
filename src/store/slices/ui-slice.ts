@@ -1,17 +1,21 @@
 import type { StateCreator } from 'zustand';
 import type { UIActions } from '@typedefs/store';
 import type { UIState } from '@typedefs/ui';
+import type { ProjectDocument } from '@typedefs/project';
+import { loadUIPrefs, saveUIPrefs } from '../middleware/persist';
 
 export interface UISlice extends UIActions {
   ui: UIState;
+  project: ProjectDocument;
 }
 
-export const defaultUI: UIState = {
+const baseUI: UIState = {
   mode: 'map',
   selectedScreenIds: [],
   selectedElementIds: [],
   draggedItem: null,
   clipboard: null,
+  linkMode: false,
   leftPanelWidth: 280,
   rightPanelWidth: 320,
   leftPanelCollapsed: false,
@@ -27,7 +31,27 @@ export const defaultUI: UIState = {
   managerTab: 'preview',
 };
 
-export const createUISlice: StateCreator<UISlice, [], [], UIActions> = (set) => ({
+function buildPersistedUIState(): UIState {
+  const prefs = loadUIPrefs();
+
+  return {
+    ...baseUI,
+    ...(prefs ?? {}),
+  } as UIState;
+}
+
+function persistUIPrefs(ui: UIState) {
+  saveUIPrefs({
+    leftPanelWidth: ui.leftPanelWidth,
+    rightPanelWidth: ui.rightPanelWidth,
+    leftPanelCollapsed: ui.leftPanelCollapsed,
+    rightPanelCollapsed: ui.rightPanelCollapsed,
+  });
+}
+
+export const defaultUI: UIState = buildPersistedUIState();
+
+export const createUISlice: StateCreator<UISlice, [], [], UIActions> = (set, get) => ({
   setMode: (mode) => set((s) => ({ ui: { ...s.ui, mode } })),
 
   selectScreen: (screenId, multi) =>
@@ -55,31 +79,53 @@ export const createUISlice: StateCreator<UISlice, [], [], UIActions> = (set) => 
       },
     })),
 
+  selectAllScreens: () => {
+    const state = get();
+    set({
+      ui: {
+        ...state.ui,
+        selectedScreenIds: Object.keys(state.project.funnel.screens),
+        selectedElementIds: [],
+      },
+    });
+  },
+
   clearSelection: () =>
     set((s) => ({
       ui: { ...s.ui, selectedScreenIds: [], selectedElementIds: [] },
     })),
 
+  setLinkMode: (enabled) =>
+    set((s) => ({ ui: { ...s.ui, linkMode: enabled } })),
+
   updatePan: (pan) => set((s) => ({ ui: { ...s.ui, mapPan: pan } })),
   updateScale: (scale) => set((s) => ({ ui: { ...s.ui, mapScale: scale } })),
 
   togglePanel: (side) =>
-    set((s) => ({
-      ui: {
+    set((s) => {
+      const ui = {
         ...s.ui,
         ...(side === 'left'
           ? { leftPanelCollapsed: !s.ui.leftPanelCollapsed }
           : { rightPanelCollapsed: !s.ui.rightPanelCollapsed }),
-      },
-    })),
+      };
+
+      persistUIPrefs(ui);
+
+      return { ui };
+    }),
 
   resizePanel: (side, width) =>
-    set((s) => ({
-      ui: {
+    set((s) => {
+      const ui = {
         ...s.ui,
         ...(side === 'left' ? { leftPanelWidth: width } : { rightPanelWidth: width }),
-      },
-    })),
+      };
+
+      persistUIPrefs(ui);
+
+      return { ui };
+    }),
 
   setPreviewVisible: (visible) =>
     set((s) => ({ ui: { ...s.ui, previewVisible: visible } })),

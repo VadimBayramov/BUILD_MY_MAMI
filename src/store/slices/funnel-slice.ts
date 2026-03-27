@@ -43,6 +43,12 @@ function generateUniqueSlug(base: string, existingSlugs: string[]): string {
   return `screen-${nanoid(6)}`;
 }
 
+function getNextUpdatedAt(currentUpdatedAt: string): string {
+  const now = Date.now();
+  const current = new Date(currentUpdatedAt).getTime();
+  return new Date(Math.max(now, current + 1)).toISOString();
+}
+
 export function buildElementIndexes(elements: Record<string, FunnelElement>): ElementIndexes {
   const byScreen: Record<string, string[]> = {};
   const byParent: Record<string, string[]> = {};
@@ -79,7 +85,10 @@ export const createFunnelSlice: StateCreator<
     const state = get();
     const [nextProject, patches, inversePatches] = produceWithPatches(
       state.project,
-      updater,
+      (draft) => {
+        updater(draft);
+        draft.updatedAt = getNextUpdatedAt(draft.updatedAt);
+      },
     );
     if (patches.length === 0) return;
 
@@ -137,6 +146,30 @@ export const createFunnelSlice: StateCreator<
         }
       }),
 
+    deleteScreens: (screenIds) => {
+      if (screenIds.length === 0) return;
+      if (screenIds.length === 1) {
+        get().deleteScreen(screenIds[0]!);
+        return;
+      }
+      const idsSet = new Set(screenIds);
+      undoableUpdate('SCREENS_BATCH_DELETE', (draft) => {
+        for (const sid of idsSet) {
+          delete draft.funnel.screens[sid];
+          for (const [eid, el] of Object.entries(draft.funnel.elements)) {
+            if (el.screenId === sid) delete draft.funnel.elements[eid];
+          }
+        }
+        draft.funnel.connections = draft.funnel.connections.filter(
+          (c) => !idsSet.has(c.from) && !idsSet.has(c.to),
+        );
+        if (idsSet.has(draft.funnel.meta.startScreenId)) {
+          const remaining = Object.keys(draft.funnel.screens);
+          draft.funnel.meta.startScreenId = remaining[0] ?? '';
+        }
+      });
+    },
+
     updateScreen: (screenId, updates) =>
       undoableUpdate('SCREEN_UPDATE', (draft) => {
         const screen = draft.funnel.screens[screenId];
@@ -189,13 +222,35 @@ export const createFunnelSlice: StateCreator<
       const existingSlugs = Object.keys(state.project.funnel.screens);
       const newSlug = generateUniqueSlug(screenId, existingSlugs);
 
+      const allScreens = Object.values(state.project.funnel.screens);
+      const maxX = allScreens.reduce((mx, s) => Math.max(mx, s.position.x), -Infinity);
+      const offsetX = Math.max(maxX + 300, screen.position.x + 300);
+
+      const screenElements = Object.values(state.project.funnel.elements).filter(
+        (el) => el.screenId === screenId,
+      );
+
       undoableUpdate('SCREEN_DUPLICATE', (draft) => {
         const newScreen = JSON.parse(JSON.stringify(screen)) as Screen;
         newScreen.id = newSlug;
         newScreen.name = `${screen.name} (copy)`;
-        newScreen.position = { x: screen.position.x + 300, y: screen.position.y };
+        newScreen.position = { x: offsetX, y: screen.position.y };
         newScreen.order = Object.keys(draft.funnel.screens).length;
         draft.funnel.screens[newSlug] = newScreen;
+
+        const idMap = new Map<string, string>();
+        for (const el of screenElements) {
+          idMap.set(el.id, `${el.type}-${nanoid(8)}`);
+        }
+        for (const el of screenElements) {
+          const copy = JSON.parse(JSON.stringify(el)) as FunnelElement;
+          copy.id = idMap.get(el.id)!;
+          copy.screenId = newSlug;
+          if (copy.parentId && idMap.has(copy.parentId)) {
+            copy.parentId = idMap.get(copy.parentId)!;
+          }
+          draft.funnel.elements[copy.id] = copy;
+        }
       });
 
       return newSlug;
@@ -214,11 +269,15 @@ export const createFunnelSlice: StateCreator<
       undoableUpdate('ELEMENT_DELETE', (draft) => {
         const el = draft.funnel.elements[elementId];
         if (!el) return;
-        const childIds = Object.values(draft.funnel.elements)
-          .filter((e) => e.parentId === elementId)
-          .map((e) => e.id);
-        for (const childId of childIds) delete draft.funnel.elements[childId];
-        delete draft.funnel.elements[elementId];
+        const toDelete = [elementId];
+        for (let i = 0; i < toDelete.length; i++) {
+          for (const e of Object.values(draft.funnel.elements)) {
+            if (e.parentId === toDelete[i] && !toDelete.includes(e.id)) {
+              toDelete.push(e.id);
+            }
+          }
+        }
+        for (const id of toDelete) delete draft.funnel.elements[id];
       }),
 
     updateElement: (elementId, updates) =>
@@ -275,6 +334,22 @@ export const createFunnelSlice: StateCreator<
       undoableUpdate('CONNECTION_UPDATE', (draft) => {
         const conn = draft.funnel.connections.find((c) => c.id === connectionId);
         if (conn) Object.assign(conn, updates);
+      }),
+
+    addBlock: (block) =>
+      undoableUpdate('BLOCK_ADD', (draft) => {
+        draft.funnel.blocks.push(block);
+      }),
+
+    deleteBlock: (blockId) =>
+      undoableUpdate('BLOCK_DELETE', (draft) => {
+        draft.funnel.blocks = draft.funnel.blocks.filter((b) => b.id !== blockId);
+      }),
+
+    updateBlock: (blockId, updates) =>
+      undoableUpdate('BLOCK_UPDATE', (draft) => {
+        const block = draft.funnel.blocks.find((b) => b.id === blockId);
+        if (block) Object.assign(block, updates);
       }),
   };
 };

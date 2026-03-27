@@ -97,8 +97,8 @@
 }
 
 .screenLabel {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 16px;
+  font-weight: 600;
   color: var(--builder-text);
   text-align: center;
   padding: 0 12px;
@@ -109,21 +109,22 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 6px 0 0;
+  padding: 8px 0 0;
 }
 
 .typeBadge {
-  font-size: 10px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.5px;
   color: white;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 4px 12px;
+  border-radius: 6px;
 }
 
 .orderNum {
-  font-size: 11px;
+  font-size: 18px;
+  font-weight: 600;
   color: var(--builder-text-muted);
 }
 
@@ -133,9 +134,24 @@
   background: var(--builder-accent) !important;
   border: 2px solid var(--builder-panel) !important;
   border-radius: 50% !important;
+  z-index: 2 !important;
 }
 
 .handle:hover {
   width: 14px !important;
   height: 14px !important;
+}
+
+.handleZone {
+  width: 60px !important;
+  height: 100% !important;
+  min-height: 320px !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  opacity: 0 !important;
+  z-index: 1 !important;
+  left: -30px !important;
+  top: 0 !important;
+  transform: none !important;
 }
