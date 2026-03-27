@@ -1,0 +1,11 @@
+dist
+node_modules
+coverage
+pnpm-lock.yaml
+docs/architecture.html
+DOCS_ARCHITECTURE.md
+docker-compose.yml
+index.html
+index.old.html
+server
+src

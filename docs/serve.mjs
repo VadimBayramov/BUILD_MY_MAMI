@@ -19,11 +19,11 @@ const PORT = process.env.PORT ?? 4000;
 
 const MIME = {
   '.html': 'text/html; charset=utf-8',
-  '.css':  'text/css',
-  '.js':   'text/javascript',
-  '.mjs':  'text/javascript',
-  '.png':  'image/png',
-  '.svg':  'image/svg+xml',
+  '.css': 'text/css',
+  '.js': 'text/javascript',
+  '.mjs': 'text/javascript',
+  '.png': 'image/png',
+  '.svg': 'image/svg+xml',
 };
 
 const server = http.createServer((req, res) => {
@@ -50,7 +50,9 @@ const server = http.createServer((req, res) => {
   }
 
   const ext = path.extname(filePath);
-  res.writeHead(200, { 'Content-Type': MIME[ext] ?? 'application/octet-stream' });
+  res.writeHead(200, {
+    'Content-Type': MIME[ext] ?? 'application/octet-stream',
+  });
   fs.createReadStream(filePath).pipe(res);
 });
 
@@ -60,6 +62,8 @@ server.listen(PORT, () => {
   console.log('');
   console.log(`  \x1b[32m➜\x1b[0m  http://localhost:${PORT}/architecture`);
   console.log('');
-  console.log('  \x1b[90m(isolated from the builder app · Ctrl+C to stop)\x1b[0m');
+  console.log(
+    '  \x1b[90m(isolated from the builder app · Ctrl+C to stop)\x1b[0m',
+  );
   console.log('');
 });
