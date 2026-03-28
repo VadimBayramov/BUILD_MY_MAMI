@@ -51,9 +51,15 @@
   grid-template-rows: 1fr;
 }
 
+/* .body is the grid item — overflow:hidden makes its min-height 0
+   so the 0fr row can collapse it fully. NO padding here. */
 .body {
   overflow: hidden;
-  padding: 0 0.75rem 0.75rem;
+}
+
+/* Padding lives on an inner wrapper so it gets clipped by .body */
+.inner {
+  padding: 0.75rem 0.75rem 0.75rem;
   font-size: 0.8125rem;
   color: var(--builder-text-muted);
 }

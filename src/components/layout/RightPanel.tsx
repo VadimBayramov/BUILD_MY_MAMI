@@ -11,13 +11,14 @@ export function RightPanel() {
   const selectedElementIds = useFunnelStore((s) => s.ui.selectedElementIds);
   const screens = useFunnelStore((s) => s.project.funnel.screens);
 
+  // Element selection takes priority over screen selection
+  if (selectedElementIds.length > 0) {
+    return <ElementProperties />;
+  }
+
   if (selectedScreenIds.length === 1) {
     const screen = screens[selectedScreenIds[0]!];
     if (screen) return <ScreenProperties screen={screen} />;
-  }
-
-  if (selectedElementIds.length > 0) {
-    return <ElementProperties />;
   }
 
   if (mode === 'map') return <FunnelSettings />;

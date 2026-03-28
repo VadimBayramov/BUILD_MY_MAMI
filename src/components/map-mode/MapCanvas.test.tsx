@@ -1,9 +1,18 @@
 import { act } from 'react';
 import ReactDOM from 'react-dom/client';
 import { beforeEach, describe, expect, test } from 'vitest';
+import { DndContext } from '@dnd-kit/core';
 import { createDefaultScreen } from '@store/defaults';
 import { useFunnelStore } from '@store/funnel-store';
 import { MapCanvas } from './MapCanvas';
+
+function WrappedMapCanvas() {
+  return (
+    <DndContext>
+      <MapCanvas />
+    </DndContext>
+  );
+}
 
 describe('MapCanvas', () => {
   beforeEach(() => {
@@ -27,7 +36,7 @@ describe('MapCanvas', () => {
     const root = ReactDOM.createRoot(container);
 
     await act(async () => {
-      root.render(<MapCanvas />);
+      root.render(<WrappedMapCanvas />);
     });
 
     expect(container.textContent).toContain('Welcome');
@@ -63,7 +72,7 @@ describe('MapCanvas', () => {
     const root = ReactDOM.createRoot(container);
 
     await act(async () => {
-      root.render(<MapCanvas />);
+      root.render(<WrappedMapCanvas />);
     });
 
     const canvas = container.querySelector('[tabindex="0"]');
@@ -98,7 +107,7 @@ describe('MapCanvas', () => {
     const root = ReactDOM.createRoot(container);
 
     await act(async () => {
-      root.render(<MapCanvas />);
+      root.render(<WrappedMapCanvas />);
     });
 
     expect(container.querySelector('button[title="Duplicate"]')).not.toBeNull();
@@ -130,7 +139,7 @@ describe('MapCanvas', () => {
     const root = ReactDOM.createRoot(container);
 
     await act(async () => {
-      root.render(<MapCanvas />);
+      root.render(<WrappedMapCanvas />);
     });
 
     expect(container.textContent).toContain('Mini Map');

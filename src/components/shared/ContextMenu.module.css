@@ -1,0 +1,62 @@
+.menu {
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  background: var(--builder-panel);
+  border: 1px solid var(--builder-border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
+  min-width: 180px;
+  z-index: 9999;
+  user-select: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 6px 12px;
+  font-size: 13px;
+  color: var(--builder-text);
+  cursor: pointer;
+  border-radius: 4px;
+  margin: 0 4px;
+  position: relative;
+  white-space: nowrap;
+}
+
+.item:hover {
+  background: var(--builder-panel-hover);
+}
+
+.item.disabled {
+  color: var(--builder-text-muted);
+  cursor: default;
+  pointer-events: none;
+}
+
+.item.hasSubmenu {
+  cursor: default;
+}
+
+.label {
+  flex: 1;
+}
+
+.shortcut {
+  font-size: 11px;
+  color: var(--builder-text-muted);
+  font-family: monospace;
+}
+
+.chevron {
+  color: var(--builder-text-muted);
+  flex-shrink: 0;
+}
+
+.separator {
+  height: 1px;
+  background: var(--builder-border);
+  margin: 4px 8px;
+}

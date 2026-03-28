@@ -29,7 +29,9 @@ export function Accordion({ title, children, defaultOpen = false }: AccordionPro
         className={`${styles.panel} ${open ? styles.panelOpen : ''}`}
         aria-hidden={!open}
       >
-        <div className={styles.body}>{children}</div>
+        <div className={styles.body}>
+          <div className={styles.inner}>{children}</div>
+        </div>
       </div>
     </div>
   );

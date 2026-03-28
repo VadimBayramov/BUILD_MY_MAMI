@@ -14,6 +14,19 @@ function createActions() {
     setMode: vi.fn(),
     clearSelection: vi.fn(),
     toggleShortcutsModal: vi.fn(),
+    rename: vi.fn(),
+    editId: vi.fn(),
+    fitView: vi.fn(),
+    autoLayout: vi.fn(),
+    newScreen: vi.fn(),
+    nextInChain: vi.fn(),
+    prevInChain: vi.fn(),
+    followDefault: vi.fn(),
+    groupIntoBlock: vi.fn(),
+    togglePreview: vi.fn(),
+    openSearch: vi.fn(),
+    goToStart: vi.fn(),
+    goToEnd: vi.fn(),
   };
 }
 
@@ -136,6 +149,62 @@ describe('createKeyboardShortcutHandler', () => {
     expect(actions.selectAll).toHaveBeenCalledTimes(1);
   });
 
+  test('F2 triggers rename', () => {
+    const actions = createActions();
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+
+    handleKeyDown(new KeyboardEvent('keydown', { key: 'F2' }));
+
+    expect(actions.rename).toHaveBeenCalledTimes(1);
+  });
+
+  test('F2 does not trigger rename inside editable fields', () => {
+    const actions = createActions();
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+    const input = document.createElement('input');
+
+    handleKeyDown(new KeyboardEvent('keydown', { key: 'F2', bubbles: true }), input);
+
+    expect(actions.rename).not.toHaveBeenCalled();
+  });
+
+  test('F3 triggers editId', () => {
+    const actions = createActions();
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+
+    handleKeyDown(new KeyboardEvent('keydown', { key: 'F3' }));
+
+    expect(actions.editId).toHaveBeenCalledTimes(1);
+  });
+
+  test('F3 does not trigger editId inside editable fields', () => {
+    const actions = createActions();
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+    const input = document.createElement('input');
+
+    handleKeyDown(new KeyboardEvent('keydown', { key: 'F3', bubbles: true }), input);
+
+    expect(actions.editId).not.toHaveBeenCalled();
+  });
+
+  test('Ctrl+Shift+L triggers autoLayout', () => {
+    const actions = createActions();
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+
+    handleKeyDown(new KeyboardEvent('keydown', { key: 'l', ctrlKey: true, shiftKey: true }));
+
+    expect(actions.autoLayout).toHaveBeenCalledTimes(1);
+  });
+
+  test('Ctrl+Shift+1 triggers fitView', () => {
+    const actions = createActions();
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+
+    handleKeyDown(new KeyboardEvent('keydown', { key: '1', ctrlKey: true, shiftKey: true }));
+
+    expect(actions.fitView).toHaveBeenCalledTimes(1);
+  });
+
   test('metaKey (macOS Cmd) works the same as ctrlKey', () => {
     const actions = createActions();
     const handleKeyDown = createKeyboardShortcutHandler(actions);
@@ -153,5 +222,128 @@ describe('createKeyboardShortcutHandler', () => {
     expect(actions.paste).toHaveBeenCalledTimes(1);
     expect(actions.selectAll).toHaveBeenCalledTimes(1);
     expect(actions.saveProject).toHaveBeenCalledTimes(1);
+  });
+
+  test('Ctrl+N triggers newScreen', () => {
+    const actions = createActions();
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+
+    handleKeyDown(new KeyboardEvent('keydown', { key: 'n', ctrlKey: true }));
+
+    expect(actions.newScreen).toHaveBeenCalledTimes(1);
+  });
+
+  test('Tab triggers nextInChain', () => {
+    const actions = createActions();
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+
+    handleKeyDown(new KeyboardEvent('keydown', { key: 'Tab' }));
+
+    expect(actions.nextInChain).toHaveBeenCalledTimes(1);
+  });
+
+  test('Shift+Tab triggers prevInChain', () => {
+    const actions = createActions();
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+
+    handleKeyDown(new KeyboardEvent('keydown', { key: 'Tab', shiftKey: true }));
+
+    expect(actions.prevInChain).toHaveBeenCalledTimes(1);
+  });
+
+  test('Ctrl+Enter triggers followDefault', () => {
+    const actions = createActions();
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+
+    handleKeyDown(new KeyboardEvent('keydown', { key: 'Enter', ctrlKey: true }));
+
+    expect(actions.followDefault).toHaveBeenCalledTimes(1);
+  });
+
+  test('Ctrl+B triggers groupIntoBlock', () => {
+    const actions = createActions();
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+
+    handleKeyDown(new KeyboardEvent('keydown', { key: 'b', ctrlKey: true }));
+
+    expect(actions.groupIntoBlock).toHaveBeenCalledTimes(1);
+  });
+
+  test('Space triggers togglePreview', () => {
+    const actions = createActions();
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+
+    handleKeyDown(new KeyboardEvent('keydown', { key: ' ' }));
+
+    expect(actions.togglePreview).toHaveBeenCalledTimes(1);
+  });
+
+  test('Ctrl+Shift+F triggers openSearch', () => {
+    const actions = createActions();
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+
+    handleKeyDown(new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, shiftKey: true }));
+
+    expect(actions.openSearch).toHaveBeenCalledTimes(1);
+  });
+
+  test('Ctrl+Shift+F works in editable fields', () => {
+    const actions = createActions();
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+    const input = document.createElement('input');
+
+    handleKeyDown(
+      new KeyboardEvent('keydown', { key: 'f', ctrlKey: true, shiftKey: true, bubbles: true }),
+      input,
+    );
+
+    expect(actions.openSearch).toHaveBeenCalledTimes(1);
+  });
+
+  test('Home triggers goToStart', () => {
+    const actions = createActions();
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+
+    handleKeyDown(new KeyboardEvent('keydown', { key: 'Home' }));
+
+    expect(actions.goToStart).toHaveBeenCalledTimes(1);
+  });
+
+  test('End triggers goToEnd', () => {
+    const actions = createActions();
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+
+    handleKeyDown(new KeyboardEvent('keydown', { key: 'End' }));
+
+    expect(actions.goToEnd).toHaveBeenCalledTimes(1);
+  });
+
+  test('Tab/Space/Home/End do not trigger in editable fields', () => {
+    const actions = createActions();
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+    const input = document.createElement('input');
+
+    handleKeyDown(new KeyboardEvent('keydown', { key: 'Tab', bubbles: true }), input);
+    handleKeyDown(new KeyboardEvent('keydown', { key: ' ', bubbles: true }), input);
+    handleKeyDown(new KeyboardEvent('keydown', { key: 'Home', bubbles: true }), input);
+    handleKeyDown(new KeyboardEvent('keydown', { key: 'End', bubbles: true }), input);
+
+    expect(actions.nextInChain).not.toHaveBeenCalled();
+    expect(actions.togglePreview).not.toHaveBeenCalled();
+    expect(actions.goToStart).not.toHaveBeenCalled();
+    expect(actions.goToEnd).not.toHaveBeenCalled();
+  });
+
+  test('run returning false does not prevent default', () => {
+    const actions = createActions();
+    actions.nextInChain.mockReturnValue(false);
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+    const event = new KeyboardEvent('keydown', { key: 'Tab', cancelable: true });
+    const spy = vi.spyOn(event, 'preventDefault');
+
+    handleKeyDown(event);
+
+    expect(actions.nextInChain).toHaveBeenCalledTimes(1);
+    expect(spy).not.toHaveBeenCalled();
   });
 });

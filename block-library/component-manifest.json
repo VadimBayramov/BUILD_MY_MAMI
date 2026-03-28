@@ -1,0 +1,374 @@
+{
+  "version": 1,
+  "components": [
+    {
+      "id": "heading",
+      "category": "content",
+      "tags": ["text", "title", "h1"],
+      "name": "Heading",
+      "description": "H1–H6 heading block",
+      "file": "content/heading.html",
+      "thumbnail": null
+    },
+    {
+      "id": "paragraph",
+      "category": "content",
+      "tags": ["text", "body"],
+      "name": "Paragraph",
+      "description": "Body text paragraph",
+      "file": "content/paragraph.html",
+      "thumbnail": null
+    },
+    {
+      "id": "image",
+      "category": "content",
+      "tags": ["image", "media", "photo"],
+      "name": "Image",
+      "description": "Responsive image block",
+      "file": "content/image.html",
+      "thumbnail": null
+    },
+    {
+      "id": "spacer",
+      "category": "content",
+      "tags": ["spacer", "gap"],
+      "name": "Spacer",
+      "description": "Empty vertical spacer",
+      "file": "content/spacer.html",
+      "thumbnail": null
+    },
+    {
+      "id": "divider",
+      "category": "content",
+      "tags": ["divider", "separator", "line"],
+      "name": "Divider",
+      "description": "Horizontal divider line",
+      "file": "content/divider.html",
+      "thumbnail": null
+    },
+    {
+      "id": "icon-text",
+      "category": "content",
+      "tags": ["icon", "text", "feature"],
+      "name": "Icon + Text",
+      "description": "Icon with label",
+      "file": "content/icon-text.html",
+      "thumbnail": null
+    },
+    {
+      "id": "option-list",
+      "category": "interactive",
+      "tags": ["survey", "options", "selection", "list"],
+      "name": "Option List",
+      "description": "Vertical list of selectable options",
+      "file": "interactive/option-list.html",
+      "thumbnail": null
+    },
+    {
+      "id": "option-tiles-2x2",
+      "category": "interactive",
+      "tags": ["survey", "options", "tiles", "grid", "images"],
+      "name": "Option Tiles 2×2",
+      "description": "Image tiles in 2×2 grid",
+      "file": "interactive/option-tiles-2x2.html",
+      "thumbnail": null
+    },
+    {
+      "id": "option-list-multi",
+      "category": "interactive",
+      "tags": ["survey", "options", "multi", "checkbox"],
+      "name": "Multi-select Options",
+      "description": "Checkbox-style multi-select list",
+      "file": "interactive/option-list-multi-select.html",
+      "thumbnail": null
+    },
+    {
+      "id": "option-slider",
+      "category": "interactive",
+      "tags": ["slider", "range", "scale"],
+      "name": "Slider",
+      "description": "Range slider with value",
+      "file": "interactive/option-slider.html",
+      "thumbnail": null
+    },
+    {
+      "id": "option-rating-stars",
+      "category": "interactive",
+      "tags": ["rating", "stars", "score"],
+      "name": "Star Rating",
+      "description": "1–5 star rating",
+      "file": "interactive/option-rating-stars.html",
+      "thumbnail": null
+    },
+    {
+      "id": "option-nps",
+      "category": "interactive",
+      "tags": ["nps", "scale", "0-10"],
+      "name": "NPS Scale",
+      "description": "Net Promoter Score 0–10",
+      "file": "interactive/option-nps.html",
+      "thumbnail": null
+    },
+    {
+      "id": "button-primary",
+      "category": "interactive",
+      "tags": ["button", "cta", "primary"],
+      "name": "Primary Button",
+      "description": "Main call-to-action button",
+      "file": "interactive/button-primary.html",
+      "thumbnail": null
+    },
+    {
+      "id": "countdown-timer",
+      "category": "interactive",
+      "tags": ["timer", "countdown", "urgency"],
+      "name": "Countdown Timer",
+      "description": "Countdown HH:MM:SS",
+      "file": "interactive/countdown-timer.html",
+      "thumbnail": null
+    },
+    {
+      "id": "container",
+      "category": "layout",
+      "tags": ["container", "wrapper", "max-width"],
+      "name": "Container",
+      "description": "Centered max-width wrapper",
+      "file": "layout/container.html",
+      "thumbnail": null
+    },
+    {
+      "id": "card",
+      "category": "layout",
+      "tags": ["card", "box", "shadow"],
+      "name": "Card",
+      "description": "Card with shadow and border-radius",
+      "file": "layout/card.html",
+      "thumbnail": null
+    },
+    {
+      "id": "flex-column",
+      "category": "layout",
+      "tags": ["flex", "column", "vertical"],
+      "name": "Flex Column",
+      "description": "Vertical flex container",
+      "file": "layout/flex-column.html",
+      "thumbnail": null
+    },
+    {
+      "id": "flex-row",
+      "category": "layout",
+      "tags": ["flex", "row", "horizontal"],
+      "name": "Flex Row",
+      "description": "Horizontal flex container",
+      "file": "layout/flex-row.html",
+      "thumbnail": null
+    },
+    {
+      "id": "hero-image-bg",
+      "category": "layout",
+      "tags": ["hero", "background", "image"],
+      "name": "Hero Image BG",
+      "description": "Full-bleed hero with background image",
+      "file": "layout/hero-image-bg.html",
+      "thumbnail": null
+    },
+    {
+      "id": "sticky-bottom",
+      "category": "layout",
+      "tags": ["sticky", "cta", "bottom", "fixed"],
+      "name": "Sticky Bottom CTA",
+      "description": "Sticky call-to-action anchored to bottom",
+      "file": "layout/sticky-bottom.html",
+      "thumbnail": null
+    },
+    {
+      "id": "input-email",
+      "category": "form",
+      "tags": ["email", "input", "capture"],
+      "name": "Email Input",
+      "description": "Email field with validation",
+      "file": "form/input-email.html",
+      "thumbnail": null
+    },
+    {
+      "id": "input-text",
+      "category": "form",
+      "tags": ["text", "input", "name"],
+      "name": "Text Input",
+      "description": "Single-line text field",
+      "file": "form/input-text.html",
+      "thumbnail": null
+    },
+    {
+      "id": "input-phone",
+      "category": "form",
+      "tags": ["phone", "input", "tel"],
+      "name": "Phone Input",
+      "description": "Phone field with flag mask",
+      "file": "form/input-phone.html",
+      "thumbnail": null
+    },
+    {
+      "id": "consent-checkbox",
+      "category": "form",
+      "tags": ["checkbox", "consent", "terms", "gdpr"],
+      "name": "Consent Checkbox",
+      "description": "Terms & Privacy consent",
+      "file": "form/consent-checkbox.html",
+      "thumbnail": null
+    },
+    {
+      "id": "paywall-3plans",
+      "category": "payment",
+      "tags": ["paywall", "plans", "pricing", "stripe"],
+      "name": "Paywall 3 Plans",
+      "description": "Three-plan pricing block",
+      "file": "payment/paywall-3plans.html",
+      "thumbnail": null
+    },
+    {
+      "id": "discount-timer",
+      "category": "payment",
+      "tags": ["discount", "timer", "urgency", "paywall"],
+      "name": "Discount Timer",
+      "description": "Countdown discount banner",
+      "file": "payment/discount-timer.html",
+      "thumbnail": null
+    },
+    {
+      "id": "guarantee-badge",
+      "category": "payment",
+      "tags": ["guarantee", "money-back", "trust"],
+      "name": "Guarantee Badge",
+      "description": "Money-back guarantee badge",
+      "file": "payment/guarantee-badge.html",
+      "thumbnail": null
+    },
+    {
+      "id": "review-card",
+      "category": "social-proof",
+      "tags": ["review", "testimonial", "stars"],
+      "name": "Review Card",
+      "description": "User review with star rating",
+      "file": "social-proof/review-card.html",
+      "thumbnail": null
+    },
+    {
+      "id": "social-proof-counter",
+      "category": "social-proof",
+      "tags": ["counter", "users", "social proof"],
+      "name": "User Counter",
+      "description": "\"12,453 users joined\" counter",
+      "file": "social-proof/social-proof-counter.html",
+      "thumbnail": null
+    },
+    {
+      "id": "progress-bar",
+      "category": "navigation",
+      "tags": ["progress", "bar", "steps"],
+      "name": "Progress Bar",
+      "description": "Horizontal progress indicator",
+      "file": "navigation/progress-bar.html",
+      "thumbnail": null
+    },
+    {
+      "id": "header-with-progress",
+      "category": "navigation",
+      "tags": ["header", "progress", "back"],
+      "name": "Header + Progress",
+      "description": "Header with back button and progress bar",
+      "file": "navigation/header-with-progress.html",
+      "thumbnail": null
+    },
+    {
+      "id": "loader-analyzing",
+      "category": "feedback",
+      "tags": ["loader", "analyzing", "progress", "animation"],
+      "name": "Analyzing Loader",
+      "description": "\"Analyzing your results\" loader",
+      "file": "feedback/loader-analyzing.html",
+      "thumbnail": null
+    },
+    {
+      "id": "loader-spinner",
+      "category": "feedback",
+      "tags": ["loader", "spinner", "loading"],
+      "name": "Spinner",
+      "description": "Simple loading spinner",
+      "file": "feedback/loader-spinner.html",
+      "thumbnail": null
+    },
+    {
+      "id": "result-score",
+      "category": "result",
+      "tags": ["result", "score", "percent"],
+      "name": "Score Result",
+      "description": "Result with percentage score",
+      "file": "result/result-score.html",
+      "thumbnail": null
+    },
+    {
+      "id": "result-personality",
+      "category": "result",
+      "tags": ["result", "type", "personality"],
+      "name": "Personality Type",
+      "description": "Personality type result card",
+      "file": "result/result-personality.html",
+      "thumbnail": null
+    },
+    {
+      "id": "screen-gender-selection",
+      "category": "templates",
+      "tags": ["screen", "gender", "survey", "template"],
+      "name": "Gender Selection",
+      "description": "Full gender selection screen",
+      "file": "templates/screen-gender-selection.html",
+      "thumbnail": null
+    },
+    {
+      "id": "screen-quiz-text",
+      "category": "templates",
+      "tags": ["screen", "quiz", "question", "template"],
+      "name": "Quiz Question",
+      "description": "Text quiz question screen",
+      "file": "templates/screen-quiz-text.html",
+      "thumbnail": null
+    },
+    {
+      "id": "screen-loader-analysis",
+      "category": "templates",
+      "tags": ["screen", "loader", "analysis", "template"],
+      "name": "Analysis Loader",
+      "description": "Full analysis loading screen",
+      "file": "templates/screen-loader-analysis.html",
+      "thumbnail": null
+    },
+    {
+      "id": "screen-email-capture",
+      "category": "templates",
+      "tags": ["screen", "email", "capture", "form", "template"],
+      "name": "Email Capture",
+      "description": "Email collection screen",
+      "file": "templates/screen-email-capture.html",
+      "thumbnail": null
+    },
+    {
+      "id": "screen-paywall-3plans",
+      "category": "templates",
+      "tags": ["screen", "paywall", "plans", "template"],
+      "name": "Paywall 3 Plans",
+      "description": "Full paywall screen with 3 plans",
+      "file": "templates/screen-paywall-3plans.html",
+      "thumbnail": null
+    },
+    {
+      "id": "raw-html",
+      "category": "custom",
+      "tags": ["raw", "html", "custom", "code"],
+      "name": "Raw HTML Block",
+      "description": "Paste any HTML — rendered as-is",
+      "file": null,
+      "thumbnail": null
+    }
+  ]
+}

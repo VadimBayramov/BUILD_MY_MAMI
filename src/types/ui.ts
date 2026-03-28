@@ -33,6 +33,8 @@ export interface UIState {
   previewDevice: 'mobile' | 'tablet' | 'desktop';
   previewLocale: string;
   managerTab: ManagerTab;
+  renameFocusId: string | null;
+  idFocusId: string | null;
 }
 
 export interface DraggedItem {
@@ -43,7 +45,8 @@ export interface DraggedItem {
 
 export type ClipboardData =
   | { type: 'element'; elements: FunnelElement[] }
-  | { type: 'screen'; screen: Screen; elements: FunnelElement[] };
+  | { type: 'screen'; screen: Screen; elements: FunnelElement[] }
+  | { type: 'screens'; screens: Screen[]; elements: FunnelElement[] };
 
 export interface HistoryEntry {
   patches: Patch[];

@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
+import { nanoid } from 'nanoid';
 import { useFunnelStore } from '@store/funnel-store';
+import { createDefaultScreen } from '@store/defaults';
 import type { Mode } from '@typedefs/ui';
 
 type ShortcutActions = {
@@ -14,6 +16,19 @@ type ShortcutActions = {
   setMode: (mode: Mode) => void;
   clearSelection: () => void;
   toggleShortcutsModal: () => void;
+  rename: () => void;
+  editId: () => void;
+  fitView: () => void;
+  autoLayout: () => void;
+  newScreen: () => void;
+  nextInChain: () => void | false;
+  prevInChain: () => void | false;
+  followDefault: () => void | false;
+  groupIntoBlock: () => void;
+  togglePreview: () => void | false;
+  openSearch: () => void;
+  goToStart: () => void | false;
+  goToEnd: () => void | false;
 };
 
 export type ShortcutDefinition = {
@@ -22,7 +37,7 @@ export type ShortcutDefinition = {
   keys: string;
   allowInEditable?: boolean;
   matches: (event: KeyboardEvent) => boolean;
-  run: (actions: ShortcutActions) => void;
+  run: (actions: ShortcutActions) => void | false;
 };
 
 function mod(event: KeyboardEvent) {
@@ -104,6 +119,35 @@ export const SHORTCUTS: ShortcutDefinition[] = [
     run: (a) => a.selectAll(),
   },
   {
+    id: 'new-screen',
+    label: 'Новый экран',
+    keys: 'Ctrl+N',
+    matches: (e) => mod(e) && !e.shiftKey && matchesKey(e, 'KeyN', 'n'),
+    run: (a) => a.newScreen(),
+  },
+  {
+    id: 'group-block',
+    label: 'Группировать в блок',
+    keys: 'Ctrl+B',
+    matches: (e) => mod(e) && !e.shiftKey && matchesKey(e, 'KeyB', 'b'),
+    run: (a) => a.groupIntoBlock(),
+  },
+  {
+    id: 'follow-default',
+    label: 'По default-связи',
+    keys: 'Ctrl+Enter',
+    matches: (e) => mod(e) && e.key === 'Enter',
+    run: (a) => a.followDefault(),
+  },
+  {
+    id: 'search-screens',
+    label: 'Поиск экранов',
+    keys: 'Ctrl+Shift+F',
+    allowInEditable: true,
+    matches: (e) => mod(e) && e.shiftKey && matchesKey(e, 'KeyF', 'f'),
+    run: (a) => a.openSearch(),
+  },
+  {
     id: 'shortcuts-modal',
     label: 'Горячие клавиши',
     keys: 'Ctrl+K',
@@ -133,6 +177,69 @@ export const SHORTCUTS: ShortcutDefinition[] = [
     run: (a) => a.setMode('developer'),
   },
   {
+    id: 'rename',
+    label: 'Переименовать экран',
+    keys: 'F2',
+    matches: (e) => e.key === 'F2',
+    run: (a) => a.rename(),
+  },
+  {
+    id: 'edit-id',
+    label: 'Изменить ID',
+    keys: 'F3',
+    matches: (e) => e.key === 'F3',
+    run: (a) => a.editId(),
+  },
+  {
+    id: 'toggle-preview',
+    label: 'Превью экрана',
+    keys: 'Space',
+    matches: (e) => !mod(e) && !e.shiftKey && !e.altKey && e.key === ' ',
+    run: (a) => a.togglePreview(),
+  },
+  {
+    id: 'next-in-chain',
+    label: 'Следующий по цепочке',
+    keys: 'Tab',
+    matches: (e) => e.key === 'Tab' && !e.shiftKey && !mod(e),
+    run: (a) => a.nextInChain(),
+  },
+  {
+    id: 'prev-in-chain',
+    label: 'Предыдущий по цепочке',
+    keys: 'Shift+Tab',
+    matches: (e) => e.key === 'Tab' && e.shiftKey && !mod(e),
+    run: (a) => a.prevInChain(),
+  },
+  {
+    id: 'go-start',
+    label: 'К стартовому экрану',
+    keys: 'Home',
+    matches: (e) => !mod(e) && e.key === 'Home',
+    run: (a) => a.goToStart(),
+  },
+  {
+    id: 'go-end',
+    label: 'К конечному экрану',
+    keys: 'End',
+    matches: (e) => !mod(e) && e.key === 'End',
+    run: (a) => a.goToEnd(),
+  },
+  {
+    id: 'auto-layout',
+    label: 'Авто-раскладка',
+    keys: 'Ctrl+Shift+L',
+    matches: (e) => mod(e) && e.shiftKey && matchesKey(e, 'KeyL', 'l'),
+    run: (a) => a.autoLayout(),
+  },
+  {
+    id: 'fit-view',
+    label: 'По размеру экрана',
+    keys: 'Ctrl+Shift+1',
+    matches: (e) => mod(e) && e.shiftKey && (e.key === '1' || e.code === 'Digit1'),
+    run: (a) => a.fitView(),
+  },
+  {
     id: 'clear-selection',
     label: 'Снять выделение',
     keys: 'Escape',
@@ -154,11 +261,17 @@ export function createKeyboardShortcutHandler(actions: ShortcutActions) {
       if (editable && !shortcut.allowInEditable) continue;
       if (!shortcut.matches(event)) continue;
 
+      const result = shortcut.run(actions);
+      if (result === false) continue;
+
       event.preventDefault();
-      shortcut.run(actions);
       return;
     }
   };
+}
+
+function focusNode(nodeId: string) {
+  window.dispatchEvent(new CustomEvent('funnel:focus-node', { detail: nodeId }));
 }
 
 export function useKeyboardShortcuts() {
@@ -185,6 +298,128 @@ export function useKeyboardShortcuts() {
       setMode: (mode) => useFunnelStore.getState().setMode(mode),
       clearSelection: () => useFunnelStore.getState().clearSelection(),
       toggleShortcutsModal,
+      rename: () => {
+        const state = useFunnelStore.getState();
+        const screenId = state.ui.selectedScreenIds[0];
+        if (!screenId) return;
+        state.triggerRename(screenId);
+      },
+      editId: () => {
+        const state = useFunnelStore.getState();
+        const elementId = state.ui.selectedElementIds[0];
+        const screenId = state.ui.selectedScreenIds[0];
+        const targetId = elementId ?? screenId;
+        if (!targetId) return;
+        state.triggerIdFocus(targetId);
+      },
+      fitView: () => {
+        window.dispatchEvent(new CustomEvent('funnel:fit-view'));
+      },
+      autoLayout: () => {
+        window.dispatchEvent(new CustomEvent('funnel:auto-layout'));
+      },
+
+      newScreen: () => {
+        const state = useFunnelStore.getState();
+        const screens = state.project.funnel.screens;
+        const count = Object.keys(screens).length;
+        const id = `screen-${nanoid(6)}`;
+        const allScreens = Object.values(screens);
+        const selectedId = state.ui.selectedScreenIds[0];
+        const selected = selectedId ? screens[selectedId] : null;
+        const maxX = allScreens.length > 0 ? Math.max(...allScreens.map((s) => s.position.x)) : -350;
+        const x = selected ? selected.position.x + 350 : maxX + 350;
+        const y = selected?.position.y ?? allScreens[0]?.position.y ?? 0;
+        state.addScreen(createDefaultScreen(id, `Screen ${count + 1}`, 'custom', { x, y }, count));
+        state.selectScreen(id, false);
+        state.triggerRename(id);
+      },
+
+      nextInChain: () => {
+        const state = useFunnelStore.getState();
+        if (state.ui.mode !== 'map' || state.ui.selectedScreenIds.length === 0) return false;
+        const screenId = state.ui.selectedScreenIds[0]!;
+        const connections = state.project.funnel.connections;
+        const target = (connections.find((c) => c.from === screenId && c.isDefault)
+          ?? connections.find((c) => c.from === screenId))?.to;
+        if (!target || !state.project.funnel.screens[target]) return false;
+        state.selectScreen(target, false);
+        focusNode(target);
+      },
+
+      prevInChain: () => {
+        const state = useFunnelStore.getState();
+        if (state.ui.mode !== 'map' || state.ui.selectedScreenIds.length === 0) return false;
+        const screenId = state.ui.selectedScreenIds[0]!;
+        const connections = state.project.funnel.connections;
+        const source = (connections.find((c) => c.to === screenId && c.isDefault)
+          ?? connections.find((c) => c.to === screenId))?.from;
+        if (!source || !state.project.funnel.screens[source]) return false;
+        state.selectScreen(source, false);
+        focusNode(source);
+      },
+
+      followDefault: () => {
+        const state = useFunnelStore.getState();
+        const screenId = state.ui.selectedScreenIds[0];
+        if (!screenId) return false;
+        const connections = state.project.funnel.connections;
+        const target = (connections.find((c) => c.from === screenId && c.isDefault)
+          ?? connections.find((c) => c.from === screenId))?.to;
+        if (!target || !state.project.funnel.screens[target]) return false;
+        state.selectScreen(target, false);
+        focusNode(target);
+      },
+
+      groupIntoBlock: () => {
+        window.dispatchEvent(new CustomEvent('funnel:group-block'));
+      },
+
+      togglePreview: () => {
+        const state = useFunnelStore.getState();
+        if (state.ui.mode !== 'map') return false;
+        state.setPreviewVisible(!state.ui.previewVisible);
+      },
+
+      openSearch: () => {
+        window.dispatchEvent(new CustomEvent('funnel:search-open'));
+      },
+
+      goToStart: () => {
+        const state = useFunnelStore.getState();
+        if (state.ui.mode !== 'map') return false;
+        const screens = state.project.funnel.screens;
+        let startId = state.project.funnel.meta.startScreenId;
+        if (!startId || !screens[startId]) {
+          const all = Object.values(screens);
+          if (all.length === 0) return false;
+          startId = all.reduce((a, b) => (a.order < b.order ? a : b)).id;
+        }
+        state.selectScreen(startId, false);
+        focusNode(startId);
+      },
+
+      goToEnd: () => {
+        const state = useFunnelStore.getState();
+        if (state.ui.mode !== 'map') return false;
+        const screens = state.project.funnel.screens;
+        const connections = state.project.funnel.connections;
+        let current = state.project.funnel.meta.startScreenId;
+        if (!current || !screens[current]) {
+          const all = Object.values(screens);
+          if (all.length === 0) return false;
+          current = all.reduce((a, b) => (a.order < b.order ? a : b)).id;
+        }
+        const visited = new Set<string>();
+        while (current && !visited.has(current)) {
+          visited.add(current);
+          const next = connections.find((c) => c.from === current && c.isDefault);
+          if (!next || !screens[next.to]) break;
+          current = next.to;
+        }
+        state.selectScreen(current, false);
+        focusNode(current);
+      },
     });
 
     window.addEventListener('keydown', handleKeyDown, true);

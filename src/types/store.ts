@@ -34,6 +34,7 @@ export interface FunnelActions {
   updateScreen: (screenId: string, updates: Partial<Screen>) => void;
   renameScreen: (oldSlug: string, newSlug: string) => void;
   moveScreen: (screenId: string, position: { x: number; y: number }) => void;
+  batchMoveScreens: (positions: Record<string, { x: number; y: number }>) => void;
   reorderScreen: (screenId: string, newOrder: number) => void;
   duplicateScreen: (screenId: string) => string;
   importScreenFromHtml: (html: string, fileName?: string) => string;
@@ -44,6 +45,7 @@ export interface FunnelActions {
   updateElementStyle: (elementId: string, property: string, value: string) => void;
   moveElement: (elementId: string, targetScreenId: string, targetParentId: string | null, order: number) => void;
   duplicateElement: (elementId: string) => string;
+  reorderElements: (screenId: string, orderedIds: string[]) => void;
 
   addConnection: (connection: Connection) => void;
   deleteConnection: (connectionId: string) => void;
@@ -69,6 +71,8 @@ export interface UIActions {
   setPreviewDevice: (device: 'mobile' | 'tablet' | 'desktop') => void;
   setGridSnap: (enabled: boolean) => void;
   setShowMinimap: (visible: boolean) => void;
+  triggerRename: (screenId: string | null) => void;
+  triggerIdFocus: (id: string | null) => void;
 }
 
 export interface HistoryActions {

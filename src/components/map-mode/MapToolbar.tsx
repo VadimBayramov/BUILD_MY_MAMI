@@ -1,4 +1,5 @@
-import { Link2, Link2Off, Group } from 'lucide-react';
+import { useEffect, useCallback } from 'react';
+import { Link2, Link2Off, Group, Wand2 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { useFunnelStore } from '@store/funnel-store';
 import styles from './MapToolbar.module.css';
@@ -9,7 +10,7 @@ export function MapToolbar() {
   const linkMode = useFunnelStore((s) => s.ui.linkMode);
   const setLinkMode = useFunnelStore((s) => s.setLinkMode);
 
-  const handleCreateBlock = () => {
+  const handleCreateBlock = useCallback(() => {
     const state = useFunnelStore.getState();
     const { selectedScreenIds } = state.ui;
     if (selectedScreenIds.length === 0) return;
@@ -41,7 +42,13 @@ export function MapToolbar() {
       width: maxX - minX,
       height: maxY - minY,
     });
-  };
+  }, []);
+
+  useEffect(() => {
+    const handler = () => handleCreateBlock();
+    window.addEventListener('funnel:group-block', handler);
+    return () => window.removeEventListener('funnel:group-block', handler);
+  }, [handleCreateBlock]);
 
   return (
     <div className={styles.toolbar}>
@@ -62,6 +69,15 @@ export function MapToolbar() {
       >
         <Group size={16} />
         <span className={styles.label}>Block</span>
+      </button>
+      <button
+        type="button"
+        className={styles.btn}
+        onClick={() => window.dispatchEvent(new CustomEvent('funnel:auto-layout'))}
+        title="Авто-раскладка экранов по цепочке (Ctrl+Shift+L)"
+      >
+        <Wand2 size={16} />
+        <span className={styles.label}>Layout</span>
       </button>
     </div>
   );

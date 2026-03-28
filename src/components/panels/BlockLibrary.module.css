@@ -2,33 +2,37 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 12px;
-  gap: 8px;
+  overflow: hidden;
 }
+
+/* ── Search ──────────────────────────────────────────────────────────────── */
 
 .searchWrap {
   position: relative;
+  flex-shrink: 0;
+  padding: 10px 10px 6px;
 }
 
 .searchIcon {
   position: absolute;
-  left: 10px;
+  left: 20px;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateY(-40%);
   color: var(--builder-text-muted);
   pointer-events: none;
 }
 
 .searchInput {
   width: 100%;
-  padding: 8px 10px 8px 32px;
+  padding: 7px 28px 7px 30px;
   border: 1px solid var(--builder-border);
   border-radius: var(--builder-radius);
   background: var(--builder-bg);
   color: var(--builder-text);
-  font-size: 13px;
+  font-size: 12px;
   outline: none;
-  transition: var(--builder-transition);
+  transition: border-color 0.15s;
+  box-sizing: border-box;
 }
 
 .searchInput:focus {
@@ -39,29 +43,122 @@
   color: var(--builder-text-muted);
 }
 
+.clearBtn {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-40%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: none;
+  background: var(--builder-text-muted);
+  border-radius: 50%;
+  color: var(--builder-panel-bg, #fff);
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.15s;
+}
+
+.clearBtn:hover {
+  opacity: 1;
+}
+
+/* ── Scrollable content ──────────────────────────────────────────────────── */
+
+.content {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 4px 6px 12px;
+}
+
+.content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.content::-webkit-scrollbar-thumb {
+  background: var(--builder-border);
+  border-radius: 2px;
+}
+
+/* ── Search results ──────────────────────────────────────────────────────── */
+
+.searchResults {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.resultsLabel {
+  font-size: 11px;
+  color: var(--builder-text-muted);
+  padding: 4px 10px 6px;
+  margin: 0;
+}
+
+.empty {
+  font-size: 12px;
+  color: var(--builder-text-muted);
+  padding: 16px 10px;
+  text-align: center;
+  margin: 0;
+}
+
+/* ── Accordion ───────────────────────────────────────────────────────────── */
+
 .categoryList {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
 }
 
-.categoryItem {
+.category {
+  display: flex;
+  flex-direction: column;
+}
+
+.categoryHeader {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 10px;
+  gap: 7px;
+  width: 100%;
+  padding: 7px 8px;
   border: none;
   border-radius: 6px;
   background: transparent;
   color: var(--builder-text);
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 500;
   cursor: pointer;
-  transition: var(--builder-transition);
   text-align: left;
+  transition: background 0.12s;
 }
 
-.categoryItem:hover {
+.categoryHeader:hover {
   background: var(--builder-panel-hover);
+}
+
+.chevron {
+  flex-shrink: 0;
+  color: var(--builder-text-muted);
+  transition: transform 0.18s ease;
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+.categoryIcon {
+  flex-shrink: 0;
+  color: var(--builder-text-muted);
 }
 
 .categoryLabel {
@@ -69,9 +166,19 @@
 }
 
 .categoryCount {
-  font-size: 11px;
+  font-size: 10px;
   color: var(--builder-text-muted);
   background: var(--builder-bg);
-  padding: 2px 6px;
-  border-radius: 10px;
+  padding: 1px 5px;
+  border-radius: 8px;
+  font-weight: 400;
+}
+
+/* ── Items inside open category ──────────────────────────────────────────── */
+
+.categoryItems {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding-bottom: 4px;
 }

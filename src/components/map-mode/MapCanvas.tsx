@@ -1,12 +1,15 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useDndContext } from '@dnd-kit/core';
 import {
   ReactFlow,
+  ReactFlowProvider,
   MiniMap,
   Background,
   BackgroundVariant,
   ConnectionMode,
   useNodesState,
   useEdgesState,
+  useReactFlow,
   type Node,
   type Edge,
   type OnConnect,
@@ -19,13 +22,94 @@ import '@xyflow/react/dist/style.css';
 import { nanoid } from 'nanoid';
 import { useFunnelStore } from '@store/funnel-store';
 import { useShallow } from 'zustand/react/shallow';
+import { createDefaultScreen } from '@store/defaults';
 import { ScreenNode } from './ScreenNode';
 import { ScreenEdge } from './ScreenEdge';
 import { BlockNode } from './BlockNode';
 import { CanvasControls } from './CanvasControls';
 import { MapToolbar } from './MapToolbar';
-import type { Screen, Connection, Block } from '@typedefs/funnel';
+import { CanvasDropZone } from './CanvasDropZone';
+import { ContextMenu, type ContextMenuEntry } from '@components/shared/ContextMenu';
+import { useContextMenu } from '@hooks/useContextMenu';
+import type { Screen, Connection, Block, ScreenType } from '@typedefs/funnel';
+import {
+  validateConnections,
+  shouldBeDefault,
+  isDuplicateConnection,
+} from '@utils/connection-validator';
 import styles from './MapCanvas.module.css';
+
+const SCREEN_TYPES: { value: ScreenType; label: string }[] = [
+  { value: 'survey',   label: 'Survey'   },
+  { value: 'question', label: 'Question' },
+  { value: 'result',   label: 'Result'   },
+  { value: 'loader',   label: 'Loader'   },
+  { value: 'form',     label: 'Form'     },
+  { value: 'paywall',  label: 'Paywall'  },
+  { value: 'custom',   label: 'Custom'   },
+];
+
+function computeAutoLayoutPositions(
+  screens: Record<string, Screen>,
+  connections: Connection[],
+  startScreenId: string,
+): Record<string, { x: number; y: number }> {
+  const screenIds = Object.keys(screens);
+  if (screenIds.length === 0) return {};
+
+  let rootId = startScreenId;
+
+  if (!rootId || !screens[rootId]) {
+    const incoming = new Set(connections.map((c) => c.to));
+    const root = screenIds.find((id) => !incoming.has(id));
+    rootId = root ?? screenIds.reduce((a, b) =>
+      screens[a]!.order < screens[b]!.order ? a : b,
+    );
+  }
+
+  if (!screens[rootId]) return {};
+
+  const visited = new Set<string>();
+  const layers: string[][] = [];
+  const queue: { id: string; depth: number }[] = [{ id: rootId, depth: 0 }];
+  visited.add(rootId);
+
+  while (queue.length > 0) {
+    const { id, depth } = queue.shift()!;
+    if (!layers[depth]) layers[depth] = [];
+    layers[depth]!.push(id);
+
+    const outgoing = connections
+      .filter((c) => c.from === id && screens[c.to] && !visited.has(c.to))
+      .sort((a, b) => (b.isDefault ? 1 : 0) - (a.isDefault ? 1 : 0));
+
+    for (const conn of outgoing) {
+      visited.add(conn.to);
+      queue.push({ id: conn.to, depth: depth + 1 });
+    }
+  }
+
+  if (visited.size === 0) return {};
+
+  const positions: Record<string, { x: number; y: number }> = {};
+  const gapX = 350;
+  const gapY = 260;
+  const upShift = 20;
+
+  for (let depth = 0; depth < layers.length; depth++) {
+    const layer = layers[depth]!;
+    const totalHeight = (layer.length - 1) * gapY;
+
+    for (let i = 0; i < layer.length; i++) {
+      positions[layer[i]!] = {
+        x: depth * gapX,
+        y: i * gapY - totalHeight / 2 - depth * upShift,
+      };
+    }
+  }
+
+  return positions;
+}
 
 const nodeTypes = { screen: ScreenNode, block: BlockNode };
 const edgeTypes = { screen: ScreenEdge };
@@ -33,19 +117,29 @@ const edgeTypes = { screen: ScreenEdge };
 function screensToNodes(
   screens: Record<string, Screen>,
   selectedScreenIds: string[],
+  screenDiagnostics: ReturnType<typeof validateConnections>['screens'],
 ): Node[] {
   const selectedSet = new Set(selectedScreenIds);
-  return Object.values(screens).map((screen) => ({
-    id: screen.id,
-    type: 'screen',
-    position: screen.position,
-    selected: selectedSet.has(screen.id),
-    data: {
-      label: screen.name,
-      screenType: screen.type,
-      order: screen.order,
-    },
-  }));
+  return Object.values(screens).map((screen) => {
+    const diag = screenDiagnostics[screen.id];
+    return {
+      id: screen.id,
+      type: 'screen',
+      position: screen.position,
+      selected: selectedSet.has(screen.id),
+      data: {
+        label: screen.name,
+        screenType: screen.type,
+        order: screen.order,
+        // diagnostics forwarded into ScreenNode
+        isStart: diag?.statuses.has('start') ?? false,
+        isDeadEnd: diag?.statuses.has('dead-end') ?? false,
+        isDuplicateDefault: diag?.statuses.has('duplicate-default') ?? false,
+        isInCycle: diag?.statuses.has('in-cycle') ?? false,
+        isUnreachable: diag?.statuses.has('unreachable') ?? false,
+      },
+    };
+  });
 }
 
 function blocksToNodes(blocks: Block[]): Node[] {
@@ -66,16 +160,28 @@ function blocksToNodes(blocks: Block[]): Node[] {
   }));
 }
 
-function connectionsToEdges(connections: Connection[]): Edge[] {
-  return connections.map((conn) => ({
-    id: conn.id,
-    type: 'screen',
-    source: conn.from,
-    target: conn.to,
-    label: conn.label || undefined,
-    animated: !!conn.condition,
-    style: { stroke: conn.condition ? '#f59e0b' : '#3b82f6', strokeWidth: 2 },
-  }));
+function connectionsToEdges(
+  connections: Connection[],
+  connDiagnostics: ReturnType<typeof validateConnections>['connections'],
+): Edge[] {
+  return connections.map((conn) => {
+    const diag = connDiagnostics[conn.id];
+    const status = diag?.status ?? 'plain';
+
+    return {
+      id: conn.id,
+      type: 'screen',
+      source: conn.from,
+      target: conn.to,
+      label: conn.label || undefined,
+      animated: status === 'conditional',
+      data: {
+        status,
+        errorReason: diag?.errorReason,
+        label: conn.label,
+      },
+    };
+  });
 }
 
 function MapCanvasInner() {
@@ -86,6 +192,7 @@ function MapCanvasInner() {
     selectedScreenIds,
     gridSnap,
     showMinimap,
+    startScreenId,
   } = useFunnelStore(
     useShallow((s) => ({
       screens: s.project.funnel.screens,
@@ -94,6 +201,7 @@ function MapCanvasInner() {
       selectedScreenIds: s.ui.selectedScreenIds,
       gridSnap: s.ui.gridSnap,
       showMinimap: s.ui.showMinimap,
+      startScreenId: s.project.funnel.meta.startScreenId,
     })),
   );
 
@@ -104,27 +212,41 @@ function MapCanvasInner() {
     const up = (e: KeyboardEvent) => { if (e.key === 'Alt') setAltPressed(false); };
     window.addEventListener('keydown', down);
     window.addEventListener('keyup', up);
-    return () => { window.removeEventListener('keydown', down); window.removeEventListener('keyup', up); };
+    return () => {
+      window.removeEventListener('keydown', down);
+      window.removeEventListener('keyup', up);
+    };
   }, []);
 
+  // ── Run validation on every change ──────────────────────────────────────
+  const diagnostics = useMemo(
+    () => validateConnections(screens, connections, startScreenId),
+    [screens, connections, startScreenId],
+  );
+
   const screenNodes = useMemo(
-    () => screensToNodes(screens, selectedScreenIds),
-    [screens, selectedScreenIds],
+    () => screensToNodes(screens, selectedScreenIds, diagnostics.screens),
+    [screens, selectedScreenIds, diagnostics.screens],
   );
   const blockNodes = useMemo(() => blocksToNodes(blocks), [blocks]);
   const allNodes = useMemo(() => [...blockNodes, ...screenNodes], [blockNodes, screenNodes]);
-  const flowEdges = useMemo(() => connectionsToEdges(connections), [connections]);
+  const flowEdges = useMemo(
+    () => connectionsToEdges(connections, diagnostics.connections),
+    [connections, diagnostics.connections],
+  );
 
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
 
-  useEffect(() => {
-    setNodes(allNodes);
-  }, [allNodes, setNodes]);
+  useEffect(() => { setNodes(allNodes); }, [allNodes, setNodes]);
+  useEffect(() => { setEdges(flowEdges); }, [flowEdges, setEdges]);
 
-  useEffect(() => {
-    setEdges(flowEdges);
-  }, [flowEdges, setEdges]);
+  // Keep up-to-date refs so the window-level keydown listener always sees
+  // current nodes/edges without having to re-register on every render.
+  const nodesRef = useRef(nodes);
+  const edgesRef = useRef(edges);
+  useEffect(() => { nodesRef.current = nodes; }, [nodes]);
+  useEffect(() => { edgesRef.current = edges; }, [edges]);
 
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
@@ -145,17 +267,29 @@ function MapCanvasInner() {
   const handleConnect: OnConnect = useCallback(
     (connection: RFConnection) => {
       if (!connection.source || !connection.target) return;
-      const newEdge = {
+
+      // Guard: no self-loops
+      if (connection.source === connection.target) return;
+
+      const current = useFunnelStore.getState().project.funnel.connections;
+
+      // Guard: no exact duplicate from+to
+      if (isDuplicateConnection(connection.source, connection.target, current)) return;
+
+      // First outgoing → becomes the default path (green)
+      const makeDefault = shouldBeDefault(connection.source, current);
+
+      const newConn: Connection = {
         id: `conn-${nanoid(8)}`,
         from: connection.source,
         to: connection.target,
-        trigger: 'option-click' as const,
+        trigger: 'option-click',
         condition: null,
         label: '',
         priority: 0,
-        isDefault: true,
+        isDefault: makeDefault,
       };
-      useFunnelStore.getState().addConnection(newEdge);
+      useFunnelStore.getState().addConnection(newConn);
     },
     [],
   );
@@ -184,35 +318,321 @@ function MapCanvasInner() {
     }
   }, [nodes]);
 
-  const handleKeyDown = useCallback(
-    (event: React.KeyboardEvent) => {
+  // ── Global keyboard handler (Delete / F2 for canvas objects) ────────────
+  useEffect(() => {
+    const handler = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+
       if (event.key === 'Delete' || event.key === 'Backspace') {
         const state = useFunnelStore.getState();
         const screenIds = state.ui.selectedScreenIds;
+        const currentEdges = edgesRef.current;
+        const currentNodes = nodesRef.current;
 
-        const selectedEdgeIds = state.project.funnel.connections
-          .filter((c) => edges.some((edge) => edge.id === c.id && edge.selected))
-          .map((c) => c.id);
+        const selectedEdgeIds = currentEdges
+          .filter((e) => e.selected)
+          .map((e) => e.id);
+        const selectedBlockIds = currentNodes
+          .filter((n) => n.selected && n.type === 'block')
+          .map((n) => n.id);
 
-        if (screenIds.length > 0) {
-          useFunnelStore.getState().deleteScreens(screenIds);
+        const hasSelection = screenIds.length > 0 || selectedEdgeIds.length > 0 || selectedBlockIds.length > 0;
+        if (!hasSelection) return;
+
+        event.preventDefault();
+        if (screenIds.length > 0) state.deleteScreens(screenIds);
+        for (const edgeId of selectedEdgeIds) state.deleteConnection(edgeId);
+        for (const blockId of selectedBlockIds) state.deleteBlock(blockId);
+        state.clearSelection();
+      }
+
+      if (event.key === 'F2') {
+        const selectedBlocks = nodesRef.current.filter((n) => n.selected && n.type === 'block');
+        if (selectedBlocks.length === 1) {
+          window.dispatchEvent(new CustomEvent(`funnel:rename-block:${selectedBlocks[0]!.id}`));
+          event.preventDefault();
         }
+      }
+    };
 
-        for (const edgeId of selectedEdgeIds) {
-          useFunnelStore.getState().deleteConnection(edgeId);
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []);
+
+  // ── Fit View (keyboard shortcut Ctrl+Shift+1 dispatches custom event) ───
+  const { fitView, setCenter, getViewport } = useReactFlow();
+  useEffect(() => {
+    const handler = () => fitView({ padding: 0.3, duration: 300 });
+    window.addEventListener('funnel:fit-view', handler);
+    return () => window.removeEventListener('funnel:fit-view', handler);
+  }, [fitView]);
+
+  // ── Focus Node (Tab/Home/End dispatch this to center view on a node) ──
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const nodeId = (e as CustomEvent).detail as string;
+
+      // Use the stored screen position directly — more reliable than fitView({ nodes })
+      // which depends on ReactFlow having already measured node dimensions.
+      const screen = useFunnelStore.getState().project.funnel.screens[nodeId];
+      if (screen) {
+        // Screen nodes are roughly 180×280px; center on the node.
+        const { zoom } = getViewport();
+        setCenter(
+          screen.position.x + 90,
+          screen.position.y + 140,
+          { zoom: Math.max(zoom, 0.75), duration: 400 },
+        );
+        return;
+      }
+
+      // Fallback for block nodes or other non-screen nodes
+      fitView({ nodes: [{ id: nodeId }], padding: 0.4, duration: 400 });
+    };
+    window.addEventListener('funnel:focus-node', handler);
+    return () => window.removeEventListener('funnel:focus-node', handler);
+  }, [fitView, setCenter, getViewport]);
+
+  // ── Auto Layout (Ctrl+Shift+L or toolbar button) ──────────────────────
+  useEffect(() => {
+    const handler = () => {
+      const state = useFunnelStore.getState();
+      const s = state.project.funnel;
+
+      // If linkMode is on — auto-connect screens that have no outgoing connections yet,
+      // ordered by screen.order (historical add-order). Re-reads connections each
+      // iteration to see connections added in previous iterations, and skips pairs
+      // that are already linked.
+      if (state.ui.linkMode) {
+        const sortedScreens = Object.values(s.screens).sort((a, b) => a.order - b.order);
+        for (let i = 0; i < sortedScreens.length - 1; i++) {
+          const from = sortedScreens[i]!;
+          const to = sortedScreens[i + 1]!;
+          const freshConns = useFunnelStore.getState().project.funnel.connections;
+          // Only connect if `from` has no outgoing connections at all
+          if (!freshConns.some((c) => c.from === from.id) &&
+              !isDuplicateConnection(from.id, to.id, freshConns)) {
+            useFunnelStore.getState().addConnection({
+              id: `conn-${nanoid(8)}`,
+              from: from.id,
+              to: to.id,
+              trigger: 'option-click',
+              condition: null,
+              label: '',
+              priority: 0,
+              isDefault: true,
+            });
+          }
         }
+      }
 
-        useFunnelStore.getState().clearSelection();
+      // Recalculate positions from the (now possibly updated) connections
+      const fresh = useFunnelStore.getState().project.funnel;
+      const positions = computeAutoLayoutPositions(fresh.screens, fresh.connections, fresh.meta.startScreenId);
+      if (Object.keys(positions).length > 0) {
+        useFunnelStore.getState().batchMoveScreens(positions);
+        setTimeout(() => fitView({ padding: 0.3, duration: 300 }), 50);
+      }
+    };
+    window.addEventListener('funnel:auto-layout', handler);
+    return () => window.removeEventListener('funnel:auto-layout', handler);
+  }, [fitView]);
+
+  // ── Context Menu ────────────────────────────────────────────────────────
+  const { target: ctxTarget, open: openCtx, close: closeCtx } = useContextMenu();
+
+  const onNodeContextMenu = useCallback(
+    (e: React.MouseEvent, node: Node) => {
+      e.preventDefault();
+      if (node.type === 'screen') {
+        openCtx({ kind: 'screen', screenId: node.id, x: e.clientX, y: e.clientY });
+      } else if (node.type === 'block') {
+        openCtx({ kind: 'block', blockId: node.id, x: e.clientX, y: e.clientY });
       }
     },
-    [edges],
+    [openCtx],
   );
 
-  const panOnDrag = altPressed ? false : true;
-  const selectionOnDrag = altPressed ? true : false;
+  const onEdgeContextMenu = useCallback(
+    (e: React.MouseEvent, edge: Edge) => {
+      e.preventDefault();
+      openCtx({ kind: 'edge', connectionId: edge.id, x: e.clientX, y: e.clientY });
+    },
+    [openCtx],
+  );
+
+  const onPaneContextMenu = useCallback(
+    (e: MouseEvent | React.MouseEvent) => {
+      e.preventDefault();
+      openCtx({ kind: 'canvas', x: (e as MouseEvent).clientX, y: (e as MouseEvent).clientY });
+    },
+    [openCtx],
+  );
+
+  const ctxEntries = useMemo((): ContextMenuEntry[] => {
+    if (!ctxTarget) return [];
+
+    if (ctxTarget.kind === 'screen') {
+      const { screenId } = ctxTarget;
+      const state = useFunnelStore.getState();
+      const otherScreens = Object.values(state.project.funnel.screens).filter(
+        (s) => s.id !== screenId,
+      );
+
+      return [
+        {
+          type: 'item', id: 'duplicate', label: 'Duplicate', shortcut: 'Ctrl+D',
+          onClick: () => {
+            useFunnelStore.getState().selectScreen(screenId, false);
+            useFunnelStore.getState().duplicate();
+          },
+        },
+        {
+          type: 'item', id: 'rename', label: 'Rename', shortcut: 'F2',
+          onClick: () => {
+            useFunnelStore.getState().selectScreen(screenId, false);
+            useFunnelStore.getState().triggerRename(screenId);
+          },
+        },
+        { type: 'separator' },
+        {
+          type: 'item', id: 'copy', label: 'Copy', shortcut: 'Ctrl+C',
+          onClick: () => {
+            useFunnelStore.getState().selectScreen(screenId, false);
+            useFunnelStore.getState().copy();
+          },
+        },
+        {
+          type: 'item', id: 'cut', label: 'Cut', shortcut: 'Ctrl+X',
+          onClick: () => {
+            useFunnelStore.getState().selectScreen(screenId, false);
+            useFunnelStore.getState().cut();
+          },
+        },
+        {
+          type: 'item', id: 'paste', label: 'Paste', shortcut: 'Ctrl+V',
+          disabled: state.ui.clipboard === null,
+          onClick: () => useFunnelStore.getState().paste(),
+        },
+        { type: 'separator' },
+        ...(otherScreens.length > 0
+          ? [{
+              type: 'submenu' as const, id: 'add-conn', label: 'Add Connection →',
+              items: otherScreens.map((s) => ({
+                type: 'item' as const, id: s.id, label: s.name,
+                onClick: () => {
+                  const current = useFunnelStore.getState().project.funnel.connections;
+                  if (isDuplicateConnection(screenId, s.id, current)) return;
+                  useFunnelStore.getState().addConnection({
+                    id: `conn-${nanoid(8)}`,
+                    from: screenId,
+                    to: s.id,
+                    trigger: 'option-click',
+                    condition: null,
+                    label: '',
+                    priority: 0,
+                    isDefault: shouldBeDefault(screenId, current),
+                  });
+                },
+              })),
+            }]
+          : []),
+        { type: 'separator' },
+        {
+          type: 'item', id: 'delete', label: 'Delete', shortcut: 'Del',
+          onClick: () => useFunnelStore.getState().deleteScreen(screenId),
+        },
+      ];
+    }
+
+    if (ctxTarget.kind === 'block') {
+      const { blockId } = ctxTarget;
+      return [
+        {
+          type: 'item' as const, id: 'rename', label: 'Rename', shortcut: 'F2',
+          onClick: () => {
+            window.dispatchEvent(new CustomEvent(`funnel:rename-block:${blockId}`));
+          },
+        },
+        {
+          type: 'item' as const, id: 'color', label: 'Change Color',
+          onClick: () => {
+            // Trigger color picker via event on the BlockNode
+            window.dispatchEvent(new CustomEvent(`funnel:pick-color-block:${blockId}`));
+          },
+        },
+        { type: 'separator' as const },
+        {
+          type: 'item' as const, id: 'delete', label: 'Delete', shortcut: 'Del',
+          onClick: () => useFunnelStore.getState().deleteBlock(blockId),
+        },
+      ];
+    }
+
+    if (ctxTarget.kind === 'edge') {
+      const { connectionId } = ctxTarget;
+      return [
+        {
+          type: 'item', id: 'set-default', label: 'Set as Default',
+          onClick: () => useFunnelStore.getState().updateConnection(connectionId, { isDefault: true }),
+        },
+        {
+          type: 'item', id: 'add-condition', label: 'Add Condition…', disabled: true,
+          onClick: () => {},
+        },
+        { type: 'separator' },
+        {
+          type: 'item', id: 'delete', label: 'Delete', shortcut: 'Del',
+          onClick: () => useFunnelStore.getState().deleteConnection(connectionId),
+        },
+      ];
+    }
+
+    // kind === 'canvas'
+    const state = useFunnelStore.getState();
+    return [
+      {
+        type: 'item', id: 'paste', label: 'Paste', shortcut: 'Ctrl+V',
+        disabled: state.ui.clipboard === null,
+        onClick: () => useFunnelStore.getState().paste(),
+      },
+      {
+        type: 'submenu', id: 'add-screen', label: 'Add Screen',
+        items: SCREEN_TYPES.map((t) => ({
+          type: 'item' as const, id: t.value, label: t.label,
+          onClick: () => {
+            const s = useFunnelStore.getState();
+            const allScreens = Object.values(s.project.funnel.screens);
+            const maxX = allScreens.length > 0
+              ? Math.max(...allScreens.map((sc) => sc.position.x))
+              : -350;
+            const refY = allScreens[0]?.position.y ?? 100;
+            const newId = `screen-${nanoid(6)}`;
+            const newScreen = createDefaultScreen(newId, t.label, t.value, { x: maxX + 350, y: refY }, allScreens.length);
+            s.addScreen(newScreen);
+            s.selectScreen(newId, false);
+          },
+        })),
+      },
+      { type: 'separator' },
+      {
+        type: 'item', id: 'fit-view', label: 'Fit View', shortcut: 'Ctrl+Shift+1',
+        onClick: () => fitView({ padding: 0.3, duration: 300 }),
+      },
+    ];
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ctxTarget, fitView]);
+
+  const { active: dndActive } = useDndContext();
+  // Show CanvasDropZone only for block drags (from BlockLibrary), not element row reorder drags
+  const isDraggingBlock = dndActive !== null && dndActive.data?.current?.type !== 'element';
+
+  const panOnDrag = !altPressed;
+  const selectionOnDrag = altPressed;
 
   return (
-    <div className={styles.canvasWrap} onKeyDown={handleKeyDown} tabIndex={0}>
+    <div className={styles.canvasWrap} tabIndex={-1}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -222,6 +642,9 @@ function MapCanvasInner() {
         onEdgesChange={onEdgesChange}
         onConnect={handleConnect}
         onNodeClick={handleNodeClick}
+        onNodeContextMenu={onNodeContextMenu}
+        onEdgeContextMenu={onEdgeContextMenu}
+        onPaneContextMenu={onPaneContextMenu}
         onPaneClick={handlePaneClick}
         onSelectionEnd={handleSelectionEnd}
         zoomOnScroll
@@ -237,6 +660,7 @@ function MapCanvasInner() {
         fitView
         fitViewOptions={{ padding: 0.3 }}
         connectionMode={ConnectionMode.Loose}
+        panActivationKeyCode={null}
         deleteKeyCode={null}
         onlyRenderVisibleElements
         proOptions={{ hideAttribution: true }}
@@ -264,10 +688,23 @@ function MapCanvasInner() {
           </div>
         </Panel>
       </ReactFlow>
+      <CanvasDropZone isActive={isDraggingBlock} />
+      {ctxTarget && (
+        <ContextMenu
+          entries={ctxEntries}
+          x={ctxTarget.x}
+          y={ctxTarget.y}
+          onClose={closeCtx}
+        />
+      )}
     </div>
   );
 }
 
 export function MapCanvas() {
-  return <MapCanvasInner />;
+  return (
+    <ReactFlowProvider>
+      <MapCanvasInner />
+    </ReactFlowProvider>
+  );
 }

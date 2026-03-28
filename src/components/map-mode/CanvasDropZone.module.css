@@ -1,0 +1,29 @@
+.zone {
+  position: absolute;
+  inset: 0;
+  pointer-events: all;
+  z-index: 10;
+  border-radius: 0;
+  transition: background 0.15s, border-color 0.15s;
+  border: 2px dashed transparent;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 24px;
+}
+
+.over {
+  background: rgba(59, 130, 246, 0.06);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.hint {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(59, 130, 246, 0.9);
+  background: rgba(15, 20, 30, 0.85);
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  pointer-events: none;
+}

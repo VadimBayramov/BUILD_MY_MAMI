@@ -6,3 +6,4 @@ export { Modal } from './Modal';
 export { ShortcutsModal } from './ShortcutsModal';
 export { Tooltip } from './Tooltip';
 export { SearchInput } from './SearchInput';
+export { ContextMenu, type ContextMenuEntry } from './ContextMenu';

@@ -1,3 +1,4 @@
+import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { Header } from './Header';
 import { LeftPanel } from './LeftPanel';
 import { RightPanel } from './RightPanel';
@@ -5,7 +6,9 @@ import { PanelResizer } from './PanelResizer';
 import { MapCanvas } from '../map-mode/MapCanvas';
 import { ManagerView } from '../manager-mode/ManagerView';
 import { DeveloperView } from '../developer-mode/DeveloperView';
+import { QuickSearch } from '../shared/QuickSearch';
 import { useResizablePanel } from '@hooks/useResizablePanel';
+import { useDragAndDrop } from '@hooks/useDragAndDrop';
 import { useFunnelStore } from '@store/funnel-store';
 import styles from './AppShell.module.css';
 
@@ -16,6 +19,11 @@ export function AppShell() {
   const maxPanelWidth = typeof window === 'undefined' ? 640 : Math.floor(window.innerWidth * 0.5);
   const leftPanel = useResizablePanel({ side: 'left', minWidth: 200, maxWidth: maxPanelWidth });
   const rightPanel = useResizablePanel({ side: 'right', minWidth: 240, maxWidth: maxPanelWidth });
+  const { handleDragEnd } = useDragAndDrop();
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+  );
 
   const templateColumns = [
     !leftCollapsed ? `${leftPanel.width}px` : null,
@@ -28,6 +36,7 @@ export function AppShell() {
     .join(' ');
 
   return (
+    <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
     <div className={styles.shell}>
       <Header />
       <div className={styles.body} style={{ gridTemplateColumns: templateColumns }}>
@@ -68,5 +77,10 @@ export function AppShell() {
         )}
       </div>
     </div>
+    <DragOverlay dropAnimation={null}>
+      {/* Ghost handled by BlockLibraryItem opacity — no custom overlay needed */}
+    </DragOverlay>
+    <QuickSearch />
+    </DndContext>
   );
 }

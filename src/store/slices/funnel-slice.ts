@@ -215,6 +215,14 @@ export const createFunnelSlice: StateCreator<
         if (screen) screen.order = newOrder;
       }),
 
+    batchMoveScreens: (positions) =>
+      undoableUpdate('SCREENS_BATCH_MOVE', (draft) => {
+        for (const [id, pos] of Object.entries(positions)) {
+          const screen = draft.funnel.screens[id];
+          if (screen) screen.position = pos;
+        }
+      }),
+
     duplicateScreen: (screenId) => {
       const state = get();
       const screen = state.project.funnel.screens[screenId];
@@ -222,20 +230,22 @@ export const createFunnelSlice: StateCreator<
       const existingSlugs = Object.keys(state.project.funnel.screens);
       const newSlug = generateUniqueSlug(screenId, existingSlugs);
 
-      const allScreens = Object.values(state.project.funnel.screens);
-      const maxX = allScreens.reduce((mx, s) => Math.max(mx, s.position.x), -Infinity);
-      const offsetX = Math.max(maxX + 300, screen.position.x + 300);
-
       const screenElements = Object.values(state.project.funnel.elements).filter(
         (el) => el.screenId === screenId,
       );
 
+      const newOrder = screen.order + 1;
+
       undoableUpdate('SCREEN_DUPLICATE', (draft) => {
+        for (const s of Object.values(draft.funnel.screens)) {
+          if (s.order >= newOrder) s.order += 1;
+        }
+
         const newScreen = JSON.parse(JSON.stringify(screen)) as Screen;
         newScreen.id = newSlug;
         newScreen.name = `${screen.name} (copy)`;
-        newScreen.position = { x: offsetX, y: screen.position.y };
-        newScreen.order = Object.keys(draft.funnel.screens).length;
+        newScreen.position = { x: screen.position.x + 300, y: screen.position.y };
+        newScreen.order = newOrder;
         draft.funnel.screens[newSlug] = newScreen;
 
         const idMap = new Map<string, string>();
@@ -300,6 +310,14 @@ export const createFunnelSlice: StateCreator<
           el.parentId = targetParentId;
           el.order = order;
         }
+      }),
+
+    reorderElements: (screenId, orderedIds) =>
+      undoableUpdate('ELEMENT_REORDER', (draft) => {
+        orderedIds.forEach((id, index) => {
+          const el = draft.funnel.elements[id];
+          if (el && el.screenId === screenId) el.order = index;
+        });
       }),
 
     duplicateElement: (elementId) => {

@@ -1,21 +1,16 @@
 import { useCallback, useState } from 'react';
 
-export type ContextMenuItem = {
-  label: string;
-  action: () => void;
-  shortcut?: string;
-};
+export type ContextMenuTarget =
+  | { kind: 'screen'; screenId: string; x: number; y: number }
+  | { kind: 'edge'; connectionId: string; x: number; y: number }
+  | { kind: 'block'; blockId: string; x: number; y: number }
+  | { kind: 'canvas'; x: number; y: number };
 
-export function useContextMenu(items: ContextMenuItem[]) {
-  const [isOpen, setOpen] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
+export function useContextMenu() {
+  const [target, setTarget] = useState<ContextMenuTarget | null>(null);
 
-  const open = useCallback((x: number, y: number) => {
-    setPosition({ x, y });
-    setOpen(true);
-  }, []);
+  const open = useCallback((t: ContextMenuTarget) => setTarget(t), []);
+  const close = useCallback(() => setTarget(null), []);
 
-  const close = useCallback(() => setOpen(false), []);
-
-  return { isOpen, position, items, open, close };
+  return { target, open, close };
 }

@@ -29,6 +29,8 @@ const baseUI: UIState = {
   previewDevice: 'mobile',
   previewLocale: 'en',
   managerTab: 'preview',
+  renameFocusId: null,
+  idFocusId: null,
 };
 
 function buildPersistedUIState(): UIState {
@@ -138,4 +140,10 @@ export const createUISlice: StateCreator<UISlice, [], [], UIActions> = (set, get
 
   setShowMinimap: (visible) =>
     set((s) => ({ ui: { ...s.ui, showMinimap: visible } })),
+
+  triggerRename: (screenId) =>
+    set((s) => ({ ui: { ...s.ui, renameFocusId: screenId } })),
+
+  triggerIdFocus: (id) =>
+    set((s) => ({ ui: { ...s.ui, idFocusId: id } })),
 });

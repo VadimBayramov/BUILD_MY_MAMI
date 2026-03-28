@@ -24,3 +24,20 @@ export interface ElementNode {
   content: string | null;
   children: ElementNode[];
 }
+
+/** Lightweight entry loaded from component-manifest.json */
+export interface ManifestEntry {
+  id: string;
+  category: string;
+  tags: string[];
+  name: string;
+  description: string;
+  /** Relative path inside block-library/, null for virtual blocks like raw-html */
+  file: string | null;
+  thumbnail: string | null;
+}
+
+export interface ComponentManifest {
+  version: number;
+  components: ManifestEntry[];
+}
