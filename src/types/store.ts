@@ -29,6 +29,7 @@ export interface FunnelActions {
   updateGlobalStyles: (styles: Partial<GlobalStyles>) => void;
 
   addScreen: (screen: Screen) => void;
+  addScreenWithElements: (screen: Screen, elements: FunnelElement[]) => void;
   deleteScreen: (screenId: string) => void;
   deleteScreens: (screenIds: string[]) => void;
   updateScreen: (screenId: string, updates: Partial<Screen>) => void;
@@ -40,12 +41,13 @@ export interface FunnelActions {
   importScreenFromHtml: (html: string, fileName?: string) => string;
 
   addElement: (element: FunnelElement) => void;
+  addElementsBatch: (elements: FunnelElement[]) => void;
   deleteElement: (elementId: string) => void;
   updateElement: (elementId: string, updates: Partial<FunnelElement>) => void;
   updateElementStyle: (elementId: string, property: string, value: string) => void;
   moveElement: (elementId: string, targetScreenId: string, targetParentId: string | null, order: number) => void;
   duplicateElement: (elementId: string) => string;
-  reorderElements: (screenId: string, orderedIds: string[]) => void;
+  reorderElements: (screenId: string, orderedIds: string[], parentId?: string | null) => void;
 
   addConnection: (connection: Connection) => void;
   deleteConnection: (connectionId: string) => void;
@@ -63,6 +65,7 @@ export interface UIActions {
   selectAllScreens: () => void;
   clearSelection: () => void;
   setLinkMode: (enabled: boolean) => void;
+  setMapLocked: (locked: boolean) => void;
   updatePan: (pan: { x: number; y: number }) => void;
   updateScale: (scale: number) => void;
   togglePanel: (side: 'left' | 'right') => void;

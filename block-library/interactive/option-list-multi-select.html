@@ -1,0 +1,90 @@
+<!--
+  @component: option-list-multi
+  @category: interactive
+  @tags: survey, options, multi, checkbox
+  @description: Checkbox-style multi-select list
+  @thumbnail: /thumbnails/option-list-multi-select.png
+  @version: 1.0
+-->
+<div class="funnel-multi-options"
+     data-component="option-list-multi"
+     data-component-category="interactive"
+     data-element-type="option-list-multi">
+
+  <label class="funnel-multi-option"
+         data-element-type="option"
+         data-editable="true"
+         data-value="opt-1">
+    <span class="funnel-multi-option__check" aria-hidden="true"></span>
+    <span class="funnel-multi-option__text" data-element-type="option-text" data-editable="true">Option 1</span>
+  </label>
+
+  <label class="funnel-multi-option"
+         data-element-type="option"
+         data-editable="true"
+         data-value="opt-2">
+    <span class="funnel-multi-option__check" aria-hidden="true"></span>
+    <span class="funnel-multi-option__text" data-element-type="option-text" data-editable="true">Option 2</span>
+  </label>
+
+  <label class="funnel-multi-option"
+         data-element-type="option"
+         data-editable="true"
+         data-value="opt-3">
+    <span class="funnel-multi-option__check" aria-hidden="true"></span>
+    <span class="funnel-multi-option__text" data-element-type="option-text" data-editable="true">Option 3</span>
+  </label>
+
+</div>
+
+<style>
+  .funnel-multi-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    font-family: var(--font-family);
+  }
+
+  .funnel-multi-option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px var(--pad-x);
+    background: var(--card-bg);
+    border: 1.5px solid var(--border-tile);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .funnel-multi-option:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow);
+  }
+
+  .funnel-multi-option.selected {
+    border-color: var(--accent);
+  }
+
+  .funnel-multi-option__check {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border-tile);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    transition: var(--transition);
+  }
+
+  .funnel-multi-option.selected .funnel-multi-option__check {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .funnel-multi-option__text {
+    color: var(--text);
+    font-size: var(--option-font);
+    font-weight: 500;
+  }
+</style>

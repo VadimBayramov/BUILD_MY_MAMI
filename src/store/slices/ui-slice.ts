@@ -16,6 +16,7 @@ const baseUI: UIState = {
   draggedItem: null,
   clipboard: null,
   linkMode: false,
+  mapLocked: false,
   leftPanelWidth: 280,
   rightPanelWidth: 320,
   leftPanelCollapsed: false,
@@ -99,6 +100,9 @@ export const createUISlice: StateCreator<UISlice, [], [], UIActions> = (set, get
 
   setLinkMode: (enabled) =>
     set((s) => ({ ui: { ...s.ui, linkMode: enabled } })),
+
+  setMapLocked: (locked) =>
+    set((s) => ({ ui: { ...s.ui, mapLocked: locked } })),
 
   updatePan: (pan) => set((s) => ({ ui: { ...s.ui, mapPan: pan } })),
   updateScale: (scale) => set((s) => ({ ui: { ...s.ui, mapScale: scale } })),

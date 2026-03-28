@@ -55,3 +55,39 @@
   text-overflow: ellipsis;
   flex: 1;
 }
+
+.actions {
+  display: none;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.row:hover .actions {
+  display: flex;
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.1s, color 0.1s;
+}
+
+.actionBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.danger:hover {
+  background: rgba(239, 68, 68, 0.3) !important;
+  color: #fca5a5 !important;
+}

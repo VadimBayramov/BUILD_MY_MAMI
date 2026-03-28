@@ -1,0 +1,145 @@
+<!--
+  @component: paywall-3plans
+  @category: payment
+  @tags: paywall, plans, pricing, stripe
+  @description: Three-plan pricing block
+  @thumbnail: /thumbnails/paywall-3plans.png
+  @version: 1.0
+-->
+<div class="funnel-plans"
+     data-component="paywall-3plans"
+     data-component-category="payment"
+     data-element-type="plans">
+
+  <div class="funnel-plan"
+       data-element-type="plan"
+       data-editable="true"
+       data-plan-id="monthly">
+    <div class="funnel-plan__name" data-element-type="plan-name" data-editable="true">Monthly</div>
+    <div class="funnel-plan__price" data-element-type="plan-price" data-editable="true">
+      <span class="funnel-plan__currency">$</span>
+      <span class="funnel-plan__amount">29</span>
+      <span class="funnel-plan__period">/mo</span>
+    </div>
+    <button class="funnel-plan__btn" data-element-type="plan-btn" data-navigate-to="">Choose</button>
+  </div>
+
+  <div class="funnel-plan funnel-plan--featured"
+       data-element-type="plan"
+       data-editable="true"
+       data-plan-id="annual">
+    <div class="funnel-plan__badge" data-element-type="badge" data-editable="true">Best Value</div>
+    <div class="funnel-plan__name" data-element-type="plan-name" data-editable="true">Annual</div>
+    <div class="funnel-plan__price" data-element-type="plan-price" data-editable="true">
+      <span class="funnel-plan__currency">$</span>
+      <span class="funnel-plan__amount">19</span>
+      <span class="funnel-plan__period">/mo</span>
+    </div>
+    <button class="funnel-plan__btn funnel-plan__btn--featured" data-element-type="plan-btn" data-navigate-to="">Choose</button>
+  </div>
+
+  <div class="funnel-plan"
+       data-element-type="plan"
+       data-editable="true"
+       data-plan-id="lifetime">
+    <div class="funnel-plan__name" data-element-type="plan-name" data-editable="true">Lifetime</div>
+    <div class="funnel-plan__price" data-element-type="plan-price" data-editable="true">
+      <span class="funnel-plan__currency">$</span>
+      <span class="funnel-plan__amount">199</span>
+      <span class="funnel-plan__period"> once</span>
+    </div>
+    <button class="funnel-plan__btn" data-element-type="plan-btn" data-navigate-to="">Choose</button>
+  </div>
+
+</div>
+
+<style>
+  .funnel-plans {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    font-family: var(--font-family);
+  }
+
+  .funnel-plan {
+    position: relative;
+    padding: var(--pad-y) var(--pad-x);
+    background: var(--card-bg);
+    border: 1.5px solid var(--border-tile);
+    border-radius: var(--radius);
+    text-align: center;
+    transition: var(--transition);
+  }
+
+  .funnel-plan--featured {
+    border-color: var(--accent);
+    box-shadow: var(--shadow);
+  }
+
+  .funnel-plan__badge {
+    display: inline-block;
+    padding: 3px 10px;
+    background: var(--accent);
+    border-radius: 999px;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+
+  .funnel-plan__name {
+    color: var(--text-muted);
+    font-size: var(--body-size);
+    margin-bottom: 6px;
+  }
+
+  .funnel-plan__price {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 2px;
+    margin-bottom: 16px;
+  }
+
+  .funnel-plan__currency {
+    color: var(--text);
+    font-size: var(--h2-size);
+    font-weight: 700;
+  }
+
+  .funnel-plan__amount {
+    color: var(--text);
+    font-size: var(--h1-size);
+    font-weight: 800;
+  }
+
+  .funnel-plan__period {
+    color: var(--text-muted);
+    font-size: var(--body-size);
+  }
+
+  .funnel-plan__btn {
+    width: 100%;
+    padding: 12px var(--pad-x);
+    background: var(--card-bg);
+    border: 1.5px solid var(--accent);
+    border-radius: var(--radius);
+    color: var(--accent);
+    font-family: var(--font-family);
+    font-size: var(--body-size);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .funnel-plan__btn--featured {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .funnel-plan__btn:hover {
+    background: var(--accent);
+    color: #fff;
+  }
+</style>

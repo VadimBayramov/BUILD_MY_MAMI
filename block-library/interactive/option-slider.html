@@ -1,0 +1,80 @@
+<!--
+  @component: option-slider
+  @category: interactive
+  @tags: slider, range, scale
+  @description: Range slider with value
+  @thumbnail: /thumbnails/option-slider.png
+  @version: 1.0
+-->
+<div class="funnel-slider-block"
+     data-component="option-slider"
+     data-component-category="interactive"
+     data-element-type="slider-block">
+
+  <div class="funnel-slider__labels">
+    <span class="funnel-slider__label-min"
+          data-element-type="label"
+          data-editable="true">Not at all</span>
+    <span class="funnel-slider__value"
+          data-element-type="value">5</span>
+    <span class="funnel-slider__label-max"
+          data-element-type="label"
+          data-editable="true">Very much</span>
+  </div>
+
+  <input class="funnel-slider"
+         type="range"
+         data-element-type="slider"
+         min="1"
+         max="10"
+         value="5"
+         step="1" />
+
+</div>
+
+<style>
+  .funnel-slider-block {
+    width: 100%;
+    padding: 8px 0;
+    font-family: var(--font-family);
+  }
+
+  .funnel-slider__labels {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    color: var(--text-muted);
+    font-size: var(--body-size);
+  }
+
+  .funnel-slider__value {
+    color: var(--accent);
+    font-size: var(--h2-size);
+    font-weight: 700;
+    min-width: 2ch;
+    text-align: center;
+  }
+
+  .funnel-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 6px;
+    background: var(--border-tile);
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .funnel-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    background: var(--accent);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: var(--shadow);
+  }
+</style>

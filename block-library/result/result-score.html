@@ -1,0 +1,99 @@
+<!--
+  @component: result-score
+  @category: result
+  @tags: result, score, percent
+  @description: Result with percentage score
+  @thumbnail: /thumbnails/result-score.png
+  @version: 1.0
+-->
+<div class="funnel-result-score"
+     data-component="result-score"
+     data-component-category="result"
+     data-element-type="result-score">
+
+  <div class="funnel-result-score__circle">
+    <svg class="funnel-result-score__svg" viewBox="0 0 80 80" aria-hidden="true">
+      <circle class="funnel-result-score__track" cx="40" cy="40" r="34" />
+      <circle class="funnel-result-score__arc" cx="40" cy="40" r="34"
+              stroke-dasharray="213.6"
+              stroke-dashoffset="64" />
+    </svg>
+    <span class="funnel-result-score__value"
+          data-element-type="score-value"
+          data-editable="true">70%</span>
+  </div>
+
+  <p class="funnel-result-score__label"
+     data-element-type="score-label"
+     data-editable="true">Your readiness score</p>
+
+  <p class="funnel-result-score__desc"
+     data-element-type="score-description"
+     data-editable="true">Great job! You're well on your way. Here's what we recommend next.</p>
+
+</div>
+
+<style>
+  .funnel-result-score {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: var(--pad-y) var(--pad-x);
+    font-family: var(--font-family);
+  }
+
+  .funnel-result-score__circle {
+    position: relative;
+    width: 120px;
+    height: 120px;
+  }
+
+  .funnel-result-score__svg {
+    width: 100%;
+    height: 100%;
+    transform: rotate(-90deg);
+  }
+
+  .funnel-result-score__track {
+    fill: none;
+    stroke: var(--border-tile);
+    stroke-width: 8;
+  }
+
+  .funnel-result-score__arc {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.6s ease;
+  }
+
+  .funnel-result-score__value {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+    font-size: var(--h2-size);
+    font-weight: 800;
+  }
+
+  .funnel-result-score__label {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--body-size);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .funnel-result-score__desc {
+    margin: 0;
+    color: var(--text);
+    font-size: var(--body-size);
+    text-align: center;
+    line-height: 1.5;
+    max-width: 320px;
+  }
+</style>

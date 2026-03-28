@@ -1,0 +1,93 @@
+<!--
+  @component: countdown-timer
+  @category: interactive
+  @tags: timer, countdown, urgency
+  @description: Countdown HH:MM:SS
+  @thumbnail: /thumbnails/countdown-timer.png
+  @version: 1.0
+-->
+<div class="funnel-countdown"
+     data-component="countdown-timer"
+     data-component-category="interactive"
+     data-element-type="countdown"
+     data-duration="600">
+
+  <p class="funnel-countdown__label"
+     data-element-type="label"
+     data-editable="true">Offer expires in:</p>
+
+  <div class="funnel-countdown__display">
+    <div class="funnel-countdown__unit">
+      <span class="funnel-countdown__digits" data-element-type="hours">00</span>
+      <span class="funnel-countdown__unit-label">hrs</span>
+    </div>
+    <span class="funnel-countdown__sep">:</span>
+    <div class="funnel-countdown__unit">
+      <span class="funnel-countdown__digits" data-element-type="minutes">10</span>
+      <span class="funnel-countdown__unit-label">min</span>
+    </div>
+    <span class="funnel-countdown__sep">:</span>
+    <div class="funnel-countdown__unit">
+      <span class="funnel-countdown__digits" data-element-type="seconds">00</span>
+      <span class="funnel-countdown__unit-label">sec</span>
+    </div>
+  </div>
+
+</div>
+
+<style>
+  .funnel-countdown {
+    width: 100%;
+    padding: 12px 0;
+    text-align: center;
+    font-family: var(--font-family);
+  }
+
+  .funnel-countdown__label {
+    margin: 0 0 10px;
+    color: var(--text-muted);
+    font-size: var(--body-size);
+  }
+
+  .funnel-countdown__display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .funnel-countdown__unit {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .funnel-countdown__digits {
+    display: inline-block;
+    min-width: 56px;
+    padding: 10px 8px;
+    background: var(--card-bg);
+    border: 1.5px solid var(--border-tile);
+    border-radius: var(--radius-sm);
+    color: var(--accent);
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1;
+    text-align: center;
+  }
+
+  .funnel-countdown__unit-label {
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .funnel-countdown__sep {
+    color: var(--accent);
+    font-size: 28px;
+    font-weight: 700;
+    padding-bottom: 18px;
+  }
+</style>

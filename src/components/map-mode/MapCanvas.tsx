@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDndContext } from '@dnd-kit/core';
+import { openFunnelPreview } from '@services/funnel-preview';
 import {
   ReactFlow,
   ReactFlowProvider,
@@ -7,6 +8,7 @@ import {
   Background,
   BackgroundVariant,
   ConnectionMode,
+  MarkerType,
   useNodesState,
   useEdgesState,
   useReactFlow,
@@ -29,6 +31,7 @@ import { BlockNode } from './BlockNode';
 import { CanvasControls } from './CanvasControls';
 import { MapToolbar } from './MapToolbar';
 import { CanvasDropZone } from './CanvasDropZone';
+import { HtmlFileDropZone } from './HtmlFileDropZone';
 import { ContextMenu, type ContextMenuEntry } from '@components/shared/ContextMenu';
 import { useContextMenu } from '@hooks/useContextMenu';
 import type { Screen, Connection, Block, ScreenType } from '@typedefs/funnel';
@@ -113,6 +116,8 @@ function computeAutoLayoutPositions(
 
 const nodeTypes = { screen: ScreenNode, block: BlockNode };
 const edgeTypes = { screen: ScreenEdge };
+const MAP_SCREEN_NODE_WIDTH = 220;
+const MAP_SCREEN_NODE_HEIGHT = 476;
 
 function screensToNodes(
   screens: Record<string, Screen>,
@@ -164,9 +169,19 @@ function connectionsToEdges(
   connections: Connection[],
   connDiagnostics: ReturnType<typeof validateConnections>['connections'],
 ): Edge[] {
+  const EDGE_MARKER_COLORS: Record<string, string> = {
+    'default-path': '#3b82f6',
+    'conditional':  '#f59e0b',
+    'plain':        '#3b82f6',
+    'error':        '#f87171',
+    'self-loop':    '#ef4444',
+    'in-cycle':     '#f97316',
+  };
+
   return connections.map((conn) => {
     const diag = connDiagnostics[conn.id];
     const status = diag?.status ?? 'plain';
+    const markerColor = EDGE_MARKER_COLORS[status] ?? '#3b82f6';
 
     return {
       id: conn.id,
@@ -175,6 +190,12 @@ function connectionsToEdges(
       target: conn.to,
       label: conn.label || undefined,
       animated: status === 'conditional',
+      markerEnd: {
+        type: MarkerType.ArrowClosed,
+        color: markerColor,
+        width: 14,
+        height: 14,
+      },
       data: {
         status,
         errorReason: diag?.errorReason,
@@ -193,6 +214,7 @@ function MapCanvasInner() {
     gridSnap,
     showMinimap,
     startScreenId,
+    mapLocked,
   } = useFunnelStore(
     useShallow((s) => ({
       screens: s.project.funnel.screens,
@@ -202,6 +224,7 @@ function MapCanvasInner() {
       gridSnap: s.ui.gridSnap,
       showMinimap: s.ui.showMinimap,
       startScreenId: s.project.funnel.meta.startScreenId,
+      mapLocked: s.ui.mapLocked,
     })),
   );
 
@@ -327,6 +350,7 @@ function MapCanvasInner() {
       if (event.key === 'Delete' || event.key === 'Backspace') {
         const state = useFunnelStore.getState();
         const screenIds = state.ui.selectedScreenIds;
+        const elementIds = state.ui.selectedElementIds;
         const currentEdges = edgesRef.current;
         const currentNodes = nodesRef.current;
 
@@ -337,14 +361,49 @@ function MapCanvasInner() {
           .filter((n) => n.selected && n.type === 'block')
           .map((n) => n.id);
 
-        const hasSelection = screenIds.length > 0 || selectedEdgeIds.length > 0 || selectedBlockIds.length > 0;
+        const hasSelection =
+          screenIds.length > 0 ||
+          elementIds.length > 0 ||
+          selectedEdgeIds.length > 0 ||
+          selectedBlockIds.length > 0;
         if (!hasSelection) return;
 
         event.preventDefault();
+        // Elements take priority — if elements are selected, delete only them
+        if (elementIds.length > 0) {
+          for (const elId of elementIds) state.deleteElement(elId);
+          state.clearSelection();
+          return;
+        }
         if (screenIds.length > 0) state.deleteScreens(screenIds);
         for (const edgeId of selectedEdgeIds) state.deleteConnection(edgeId);
         for (const blockId of selectedBlockIds) state.deleteBlock(blockId);
         state.clearSelection();
+      }
+
+      // Ctrl+P — open funnel preview in new browser tab
+      if ((event.ctrlKey || event.metaKey) && event.key === 'p') {
+        event.preventDefault();
+        const st = useFunnelStore.getState();
+        openFunnelPreview(
+          st.project.funnel.screens,
+          st.project.funnel.elements,
+          st.elementIndexes,
+          st.project.funnel.globalStyles,
+        );
+        return;
+      }
+
+      // Ctrl+D — duplicate selected element (if any), otherwise screens
+      if ((event.ctrlKey || event.metaKey) && event.key === 'd') {
+        const state = useFunnelStore.getState();
+        const elementIds = state.ui.selectedElementIds;
+        if (elementIds.length > 0) {
+          event.preventDefault();
+          for (const elId of elementIds) state.duplicateElement(elId);
+          return;
+        }
+        // fall through to the existing duplicate shortcut (handled in useKeyboardShortcuts)
       }
 
       if (event.key === 'F2') {
@@ -361,33 +420,62 @@ function MapCanvasInner() {
   }, []);
 
   // ── Fit View (keyboard shortcut Ctrl+Shift+1 dispatches custom event) ───
-  const { fitView, setCenter, getViewport } = useReactFlow();
+  const { fitView, setCenter, getViewport, setViewport } = useReactFlow();
+
+  // Ref for async access (WASD handler, etc.)
+  const rfMethodsRef = useRef({ fitView, setCenter, getViewport, setViewport });
+  rfMethodsRef.current = { fitView, setCenter, getViewport, setViewport };
+
+  // ── WASD / Arrow navigation when map is locked ─────────────────────────
+  useEffect(() => {
+    if (!mapLocked) return;
+    const PAN_STEP = 80;
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+
+      let dx = 0;
+      let dy = 0;
+      if (e.key === 'w' || e.key === 'W' || e.key === 'ArrowUp')    dy = PAN_STEP;
+      if (e.key === 's' || e.key === 'S' || e.key === 'ArrowDown')  dy = -PAN_STEP;
+      if (e.key === 'a' || e.key === 'A' || e.key === 'ArrowLeft')  dx = PAN_STEP;
+      if (e.key === 'd' || e.key === 'D' || e.key === 'ArrowRight') dx = -PAN_STEP;
+
+      if (dx !== 0 || dy !== 0) {
+        e.preventDefault();
+        const rf = rfMethodsRef.current;
+        const vp = rf.getViewport();
+        rf.setViewport({ x: vp.x + dx, y: vp.y + dy, zoom: vp.zoom }, { duration: 150 });
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [mapLocked]);
   useEffect(() => {
     const handler = () => fitView({ padding: 0.3, duration: 300 });
     window.addEventListener('funnel:fit-view', handler);
     return () => window.removeEventListener('funnel:fit-view', handler);
   }, [fitView]);
 
-  // ── Focus Node (Tab/Home/End dispatch this to center view on a node) ──
+  // ── Focus Node (Tab/Home/End/Space dispatch this to center view on a node) ──
   useEffect(() => {
     const handler = (e: Event) => {
-      const nodeId = (e as CustomEvent).detail as string;
+      const detail = (e as CustomEvent).detail;
+      const nodeId: string = typeof detail === 'string' ? detail : detail?.nodeId;
+      const requestedZoom: number | undefined = typeof detail === 'object' ? detail?.zoom : undefined;
 
-      // Use the stored screen position directly — more reliable than fitView({ nodes })
-      // which depends on ReactFlow having already measured node dimensions.
       const screen = useFunnelStore.getState().project.funnel.screens[nodeId];
       if (screen) {
-        // Screen nodes are roughly 180×280px; center on the node.
-        const { zoom } = getViewport();
+        const { zoom: currentZoom } = getViewport();
+        const targetZoom = requestedZoom ?? Math.max(currentZoom, 0.75);
         setCenter(
-          screen.position.x + 90,
-          screen.position.y + 140,
-          { zoom: Math.max(zoom, 0.75), duration: 400 },
+          screen.position.x + MAP_SCREEN_NODE_WIDTH / 2,
+          screen.position.y + MAP_SCREEN_NODE_HEIGHT / 2,
+          { zoom: targetZoom, duration: 400 },
         );
         return;
       }
 
-      // Fallback for block nodes or other non-screen nodes
       fitView({ nodes: [{ id: nodeId }], padding: 0.4, duration: 400 });
     };
     window.addEventListener('funnel:focus-node', handler);
@@ -621,15 +709,14 @@ function MapCanvasInner() {
         onClick: () => fitView({ padding: 0.3, duration: 300 }),
       },
     ];
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ctxTarget, fitView]);
 
   const { active: dndActive } = useDndContext();
   // Show CanvasDropZone only for block drags (from BlockLibrary), not element row reorder drags
   const isDraggingBlock = dndActive !== null && dndActive.data?.current?.type !== 'element';
 
-  const panOnDrag = !altPressed;
-  const selectionOnDrag = altPressed;
+  const panOnDrag = mapLocked ? false : !altPressed;
+  const selectionOnDrag = mapLocked ? false : altPressed;
 
   return (
     <div className={styles.canvasWrap} tabIndex={-1}>
@@ -647,12 +734,15 @@ function MapCanvasInner() {
         onPaneContextMenu={onPaneContextMenu}
         onPaneClick={handlePaneClick}
         onSelectionEnd={handleSelectionEnd}
-        zoomOnScroll
-        zoomOnPinch
+        zoomOnScroll={!mapLocked}
+        zoomOnPinch={!mapLocked}
+        zoomOnDoubleClick={!mapLocked}
         panOnDrag={panOnDrag}
         selectionOnDrag={selectionOnDrag}
         selectionMode={'partial' as SelectionMode}
         selectNodesOnDrag={false}
+        nodesDraggable={!mapLocked}
+        nodesConnectable={!mapLocked}
         minZoom={0.1}
         maxZoom={3}
         snapToGrid={gridSnap}
@@ -689,6 +779,7 @@ function MapCanvasInner() {
         </Panel>
       </ReactFlow>
       <CanvasDropZone isActive={isDraggingBlock} />
+      <HtmlFileDropZone />
       {ctxTarget && (
         <ContextMenu
           entries={ctxEntries}

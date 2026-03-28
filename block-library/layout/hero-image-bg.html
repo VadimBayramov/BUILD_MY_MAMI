@@ -1,0 +1,57 @@
+<!--
+  @component: hero-image-bg
+  @category: layout
+  @tags: hero, background, image
+  @description: Full-bleed hero with background image
+  @thumbnail: /thumbnails/hero-image-bg.png
+  @version: 1.0
+-->
+<div class="funnel-hero"
+     data-component="hero-image-bg"
+     data-component-category="layout"
+     data-element-type="hero"
+     data-bg-image="">
+
+  <div class="funnel-hero__overlay"></div>
+
+  <div class="funnel-hero__content"
+       data-element-type="hero-content">
+    <!-- Drop child components here -->
+  </div>
+
+</div>
+
+<style>
+  .funnel-hero {
+    position: relative;
+    width: 100%;
+    min-height: 320px;
+    background-color: var(--card-bg);
+    background-image: none;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .funnel-hero__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+  }
+
+  .funnel-hero__content {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: var(--container-max);
+    padding: var(--pad-y) var(--pad-x);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+</style>

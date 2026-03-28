@@ -24,7 +24,7 @@ export function ElementSpacingSection({ element }: Props) {
     <div className={styles.fields}>
       <div className={styles.field}>
         <span className={styles.label}>Margin</span>
-        <div className={styles.fourCol}>
+        <div className={styles.twoCol}>
           {SIDES.map((side) => (
             <NumberInput
               key={`margin-${side}`}
@@ -42,7 +42,7 @@ export function ElementSpacingSection({ element }: Props) {
 
       <div className={styles.field}>
         <span className={styles.label}>Padding</span>
-        <div className={styles.fourCol}>
+        <div className={styles.twoCol}>
           {SIDES.map((side) => (
             <NumberInput
               key={`padding-${side}`}

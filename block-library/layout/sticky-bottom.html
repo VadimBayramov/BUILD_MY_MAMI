@@ -1,0 +1,57 @@
+<!--
+  @component: sticky-bottom
+  @category: layout
+  @tags: sticky, cta, bottom, fixed
+  @description: Sticky call-to-action anchored to bottom
+  @thumbnail: /thumbnails/sticky-bottom.png
+  @version: 1.0
+-->
+<div class="funnel-sticky-bottom"
+     data-component="sticky-bottom"
+     data-component-category="layout"
+     data-element-type="sticky-bottom">
+
+  <button class="funnel-sticky-btn"
+          data-element-type="button"
+          data-editable="true"
+          data-navigate-to=""
+          data-action="navigate">
+    Get Started →
+  </button>
+
+</div>
+
+<style>
+  .funnel-sticky-bottom {
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 12px var(--pad-x);
+    background: var(--bg);
+    border-top: 1px solid var(--border-tile);
+  }
+
+  .funnel-sticky-btn {
+    display: block;
+    width: 100%;
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 16px var(--pad-x);
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    color: #fff;
+    font-family: var(--font-family);
+    font-size: var(--option-font);
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow);
+  }
+
+  .funnel-sticky-btn:hover {
+    background: var(--accent-hover);
+  }
+</style>

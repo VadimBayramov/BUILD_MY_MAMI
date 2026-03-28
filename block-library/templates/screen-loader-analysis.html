@@ -1,0 +1,194 @@
+<!--
+  @component: screen-loader-analysis
+  @category: templates
+  @tags: screen, loader, analysis, template
+  @description: Full analysis loading screen
+  @thumbnail: /thumbnails/screen-loader-analysis.png
+  @version: 1.0
+-->
+<div class="funnel-screen"
+     data-component="screen-loader-analysis"
+     data-component-category="templates"
+     data-element-type="screen">
+
+  <div class="funnel-screen__container">
+
+    <div class="funnel-screen__body funnel-screen__body--centered"
+         data-element-type="screen-body">
+
+      <div class="funnel-analysis-loader"
+           data-element-type="analysis-loader">
+
+        <div class="funnel-analysis-loader__bars" aria-hidden="true">
+          <span class="funnel-analysis-loader__bar"></span>
+          <span class="funnel-analysis-loader__bar"></span>
+          <span class="funnel-analysis-loader__bar"></span>
+          <span class="funnel-analysis-loader__bar"></span>
+          <span class="funnel-analysis-loader__bar"></span>
+        </div>
+
+        <h1 class="funnel-analysis-loader__heading"
+            data-element-type="heading"
+            data-editable="true">Analyzing your results…</h1>
+
+        <p class="funnel-analysis-loader__sub"
+           data-element-type="subheading"
+           data-editable="true">Building your personalized plan</p>
+
+        <div class="funnel-analysis-loader__track"
+             data-element-type="progress-track">
+          <div class="funnel-analysis-loader__fill"></div>
+        </div>
+
+        <ul class="funnel-analysis-loader__steps"
+            data-element-type="steps-list">
+          <li class="funnel-analysis-loader__step funnel-analysis-loader__step--done"
+              data-element-type="step"
+              data-editable="true">
+            <span aria-hidden="true">✓</span> Collecting your answers
+          </li>
+          <li class="funnel-analysis-loader__step funnel-analysis-loader__step--active"
+              data-element-type="step"
+              data-editable="true">
+            <span aria-hidden="true">⟳</span> Calculating your profile
+          </li>
+          <li class="funnel-analysis-loader__step"
+              data-element-type="step"
+              data-editable="true">
+            <span aria-hidden="true">◌</span> Preparing recommendations
+          </li>
+        </ul>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<style>
+  .funnel-screen {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 100%;
+    background: var(--bg);
+    font-family: var(--font-family);
+  }
+
+  .funnel-screen__container {
+    width: 100%;
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: var(--pad-y) var(--pad-x);
+  }
+
+  .funnel-screen__body--centered {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100%;
+    justify-content: center;
+  }
+
+  .funnel-analysis-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    max-width: 360px;
+  }
+
+  .funnel-analysis-loader__bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    height: 48px;
+  }
+
+  .funnel-analysis-loader__bar {
+    display: block;
+    width: 10px;
+    background: var(--accent);
+    border-radius: 5px;
+    animation: loaderBar 1.2s ease-in-out infinite;
+  }
+
+  .funnel-analysis-loader__bar:nth-child(1) { height: 24px; animation-delay: 0s; }
+  .funnel-analysis-loader__bar:nth-child(2) { height: 36px; animation-delay: 0.1s; }
+  .funnel-analysis-loader__bar:nth-child(3) { height: 48px; animation-delay: 0.2s; }
+  .funnel-analysis-loader__bar:nth-child(4) { height: 30px; animation-delay: 0.3s; }
+  .funnel-analysis-loader__bar:nth-child(5) { height: 18px; animation-delay: 0.4s; }
+
+  @keyframes loaderBar {
+    0%, 100% { opacity: 0.4; transform: scaleY(0.6); }
+    50% { opacity: 1; transform: scaleY(1); }
+  }
+
+  .funnel-analysis-loader__heading {
+    margin: 0;
+    color: var(--text);
+    font-size: var(--h2-size);
+    font-weight: 700;
+    text-align: center;
+  }
+
+  .funnel-analysis-loader__sub {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--body-size);
+    text-align: center;
+  }
+
+  .funnel-analysis-loader__track {
+    width: 100%;
+    height: 8px;
+    background: var(--border-tile);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .funnel-analysis-loader__fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    animation: loaderProgress 3s ease-in-out infinite;
+  }
+
+  @keyframes loaderProgress {
+    0% { width: 5%; }
+    85% { width: 90%; }
+    100% { width: 100%; }
+  }
+
+  .funnel-analysis-loader__steps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .funnel-analysis-loader__step {
+    color: var(--text-muted);
+    font-size: var(--body-size);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px 0;
+  }
+
+  .funnel-analysis-loader__step--done {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .funnel-analysis-loader__step--active {
+    color: var(--text);
+    font-weight: 600;
+  }
+</style>

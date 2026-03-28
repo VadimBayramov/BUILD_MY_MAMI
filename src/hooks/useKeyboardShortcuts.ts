@@ -3,6 +3,7 @@ import { nanoid } from 'nanoid';
 import { useFunnelStore } from '@store/funnel-store';
 import { createDefaultScreen } from '@store/defaults';
 import type { Mode } from '@typedefs/ui';
+import { resolveSpaceMode } from '@utils/screen-focus-mode';
 
 type ShortcutActions = {
   undo: () => void;
@@ -16,6 +17,7 @@ type ShortcutActions = {
   setMode: (mode: Mode) => void;
   clearSelection: () => void;
   toggleShortcutsModal: () => void;
+  toggleMapLock: () => void;
   rename: () => void;
   editId: () => void;
   fitView: () => void;
@@ -25,7 +27,7 @@ type ShortcutActions = {
   prevInChain: () => void | false;
   followDefault: () => void | false;
   groupIntoBlock: () => void;
-  togglePreview: () => void | false;
+  toggleFocusedScreenMode: () => void | false;
   openSearch: () => void;
   goToStart: () => void | false;
   goToEnd: () => void | false;
@@ -156,6 +158,13 @@ export const SHORTCUTS: ShortcutDefinition[] = [
     run: (a) => a.toggleShortcutsModal(),
   },
   {
+    id: 'toggle-map-lock',
+    label: 'Блокировка карты',
+    keys: 'Ctrl+Q',
+    matches: (e) => mod(e) && matchesKey(e, 'KeyQ', 'q'),
+    run: (a) => a.toggleMapLock(),
+  },
+  {
     id: 'mode-map',
     label: 'Режим: Карта',
     keys: '1',
@@ -191,11 +200,11 @@ export const SHORTCUTS: ShortcutDefinition[] = [
     run: (a) => a.editId(),
   },
   {
-    id: 'toggle-preview',
-    label: 'Превью экрана',
+    id: 'toggle-screen-focus',
+    label: 'Экран / карта',
     keys: 'Space',
-    matches: (e) => !mod(e) && !e.shiftKey && !e.altKey && e.key === ' ',
-    run: (a) => a.togglePreview(),
+    matches: (e) => !mod(e) && !e.shiftKey && !e.altKey && (e.code === 'Space' || e.key === ' '),
+    run: (a) => a.toggleFocusedScreenMode(),
   },
   {
     id: 'next-in-chain',
@@ -270,8 +279,8 @@ export function createKeyboardShortcutHandler(actions: ShortcutActions) {
   };
 }
 
-function focusNode(nodeId: string) {
-  window.dispatchEvent(new CustomEvent('funnel:focus-node', { detail: nodeId }));
+function focusNode(nodeId: string, zoom?: number) {
+  window.dispatchEvent(new CustomEvent('funnel:focus-node', { detail: { nodeId, zoom } }));
 }
 
 export function useKeyboardShortcuts() {
@@ -298,6 +307,10 @@ export function useKeyboardShortcuts() {
       setMode: (mode) => useFunnelStore.getState().setMode(mode),
       clearSelection: () => useFunnelStore.getState().clearSelection(),
       toggleShortcutsModal,
+      toggleMapLock: () => {
+        const state = useFunnelStore.getState();
+        state.setMapLocked(!state.ui.mapLocked);
+      },
       rename: () => {
         const state = useFunnelStore.getState();
         const screenId = state.ui.selectedScreenIds[0];
@@ -375,10 +388,24 @@ export function useKeyboardShortcuts() {
         window.dispatchEvent(new CustomEvent('funnel:group-block'));
       },
 
-      togglePreview: () => {
+      toggleFocusedScreenMode: () => {
         const state = useFunnelStore.getState();
-        if (state.ui.mode !== 'map') return false;
-        state.setPreviewVisible(!state.ui.previewVisible);
+        const orderedScreens = Object.values(state.project.funnel.screens).sort((a, b) => a.order - b.order);
+        const selectedScreenId = state.ui.selectedScreenIds[0] ?? null;
+        const transition = resolveSpaceMode({
+          mode: state.ui.mode,
+          selectedScreenId,
+          fallbackScreenId: selectedScreenId ?? orderedScreens[0]?.id ?? null,
+        });
+
+        if (!transition || !transition.focusScreenId) return false;
+
+        state.selectScreen(transition.focusScreenId, false);
+        state.setMode(transition.nextMode);
+
+        if (transition.nextMode === 'map') {
+          setTimeout(() => focusNode(transition.focusScreenId!, 1.5), 200);
+        }
       },
 
       openSearch: () => {
@@ -396,7 +423,7 @@ export function useKeyboardShortcuts() {
           startId = all.reduce((a, b) => (a.order < b.order ? a : b)).id;
         }
         state.selectScreen(startId, false);
-        focusNode(startId);
+        focusNode(startId, 1.5);
       },
 
       goToEnd: () => {
@@ -418,7 +445,7 @@ export function useKeyboardShortcuts() {
           current = next.to;
         }
         state.selectScreen(current, false);
-        focusNode(current);
+        focusNode(current, 1.5);
       },
     });
 

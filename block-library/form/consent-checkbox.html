@@ -1,0 +1,66 @@
+<!--
+  @component: consent-checkbox
+  @category: form
+  @tags: checkbox, consent, terms, gdpr
+  @description: Terms & Privacy consent
+  @thumbnail: /thumbnails/consent-checkbox.png
+  @version: 1.0
+-->
+<div class="funnel-consent"
+     data-component="consent-checkbox"
+     data-component-category="form"
+     data-element-type="consent">
+
+  <label class="funnel-consent__label">
+    <span class="funnel-consent__check" data-element-type="checkbox" aria-hidden="true"></span>
+    <span class="funnel-consent__text"
+          data-element-type="consent-text"
+          data-editable="true">
+      I agree to the <a href="#" data-element-type="link" data-editable="true">Terms of Service</a>
+      and <a href="#" data-element-type="link" data-editable="true">Privacy Policy</a>.
+    </span>
+  </label>
+
+</div>
+
+<style>
+  .funnel-consent {
+    width: 100%;
+    padding: 4px 0;
+    font-family: var(--font-family);
+  }
+
+  .funnel-consent__label {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+  }
+
+  .funnel-consent__check {
+    flex-shrink: 0;
+    width: 18px;
+    height: 18px;
+    margin-top: 2px;
+    border: 2px solid var(--border-tile);
+    border-radius: var(--radius-sm);
+    background: var(--bg);
+    transition: var(--transition);
+  }
+
+  .funnel-consent__label.checked .funnel-consent__check {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+
+  .funnel-consent__text {
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .funnel-consent__text a {
+    color: var(--accent);
+    text-decoration: underline;
+  }
+</style>

@@ -1,0 +1,126 @@
+.toggleBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--builder-border);
+  border-radius: 6px;
+  background: var(--builder-bg);
+  color: var(--builder-text);
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s, border-color 0.12s;
+}
+
+.toggleBtn:hover {
+  background: var(--builder-hover);
+  border-color: var(--builder-accent);
+}
+
+.badge {
+  margin-left: auto;
+  background: var(--builder-accent);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+  line-height: 1.6;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid var(--builder-border);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  border-bottom: 1px solid var(--builder-border);
+}
+
+.group:last-child {
+  border-bottom: none;
+}
+
+.groupTitle {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--builder-text-muted);
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--builder-border);
+}
+
+.varRow {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.varHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 18px;
+}
+
+.varLabel {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--builder-text-muted);
+}
+
+.clearBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--builder-border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--builder-accent);
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.12s, color 0.12s;
+}
+
+.clearBtn:hover {
+  background: var(--builder-accent);
+  color: #fff;
+  border-color: var(--builder-accent);
+}
+
+.globalHint {
+  font-size: 11px;
+  color: var(--builder-text-muted);
+  opacity: 0.55;
+  font-family: 'Menlo', 'Consolas', monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 2-column grid for size vars */
+.sizeGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.sizeVar {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}

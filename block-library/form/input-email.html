@@ -1,0 +1,70 @@
+<!--
+  @component: input-email
+  @category: form
+  @tags: email, input, capture
+  @description: Email field with validation
+  @thumbnail: /thumbnails/input-email.png
+  @version: 1.0
+-->
+<div class="funnel-input-group"
+     data-component="input-email"
+     data-component-category="form"
+     data-element-type="input-group">
+
+  <label class="funnel-input-label"
+         data-element-type="label"
+         data-editable="true"
+         for="funnel-email">
+    Email address
+  </label>
+
+  <input class="funnel-input"
+         data-element-type="input"
+         type="email"
+         id="funnel-email"
+         name="email"
+         placeholder="you@example.com"
+         data-editable="true"
+         autocomplete="email"
+         required />
+
+</div>
+
+<style>
+  .funnel-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    font-family: var(--font-family);
+  }
+
+  .funnel-input-label {
+    color: var(--text);
+    font-size: var(--body-size);
+    font-weight: 600;
+  }
+
+  .funnel-input {
+    width: 100%;
+    padding: 12px var(--pad-x);
+    background: var(--card-bg);
+    border: 1.5px solid var(--border-tile);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font-family);
+    font-size: var(--body-size);
+    outline: none;
+    transition: var(--transition);
+    box-sizing: border-box;
+  }
+
+  .funnel-input::placeholder {
+    color: var(--text-muted);
+  }
+
+  .funnel-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+</style>

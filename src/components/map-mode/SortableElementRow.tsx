@@ -1,7 +1,7 @@
 import { memo, useCallback } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Trash2, Copy } from 'lucide-react';
 import { useFunnelStore } from '@store/funnel-store';
 import styles from './SortableElementRow.module.css';
 
@@ -22,7 +22,7 @@ export const SortableElementRow = memo(function SortableElementRow({
 }: SortableElementRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: elementId,
-    data: { type: 'element', screenId },
+    data: { type: 'element', screenId, parentId: null },
   });
 
   const style = {
@@ -35,6 +35,22 @@ export const SortableElementRow = memo(function SortableElementRow({
     (e: React.MouseEvent) => {
       e.stopPropagation();
       useFunnelStore.getState().selectElement(elementId, e.ctrlKey || e.metaKey);
+    },
+    [elementId],
+  );
+
+  const handleDelete = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      useFunnelStore.getState().deleteElement(elementId);
+    },
+    [elementId],
+  );
+
+  const handleDuplicate = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      useFunnelStore.getState().duplicateElement(elementId);
     },
     [elementId],
   );
@@ -56,6 +72,24 @@ export const SortableElementRow = memo(function SortableElementRow({
       </span>
       <span className={styles.abbr}>{abbr}</span>
       <span className={styles.content}>{content}</span>
+      <span className={styles.actions}>
+        <button
+          type="button"
+          className={styles.actionBtn}
+          title="Duplicate (Ctrl+D)"
+          onClick={handleDuplicate}
+        >
+          <Copy size={9} />
+        </button>
+        <button
+          type="button"
+          className={`${styles.actionBtn} ${styles.danger}`}
+          title="Delete"
+          onClick={handleDelete}
+        >
+          <Trash2 size={9} />
+        </button>
+      </span>
     </div>
   );
 });

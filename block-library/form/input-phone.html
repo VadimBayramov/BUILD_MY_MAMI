@@ -1,0 +1,90 @@
+<!--
+  @component: input-phone
+  @category: form
+  @tags: phone, input, tel
+  @description: Phone field with flag mask
+  @thumbnail: /thumbnails/input-phone.png
+  @version: 1.0
+-->
+<div class="funnel-input-group"
+     data-component="input-phone"
+     data-component-category="form"
+     data-element-type="input-group">
+
+  <label class="funnel-input-label"
+         data-element-type="label"
+         data-editable="true"
+         for="funnel-phone">
+    Phone number
+  </label>
+
+  <div class="funnel-phone-wrapper">
+    <span class="funnel-phone-flag"
+          data-element-type="flag"
+          data-editable="true">🇺🇸 +1</span>
+    <input class="funnel-input funnel-input--phone"
+           data-element-type="input"
+           type="tel"
+           id="funnel-phone"
+           name="phone"
+           placeholder="(555) 000-0000"
+           data-editable="true"
+           autocomplete="tel" />
+  </div>
+
+</div>
+
+<style>
+  .funnel-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+    font-family: var(--font-family);
+  }
+
+  .funnel-input-label {
+    color: var(--text);
+    font-size: var(--body-size);
+    font-weight: 600;
+  }
+
+  .funnel-phone-wrapper {
+    display: flex;
+    align-items: center;
+    background: var(--card-bg);
+    border: 1.5px solid var(--border-tile);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: var(--transition);
+  }
+
+  .funnel-phone-wrapper:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 20%, transparent);
+  }
+
+  .funnel-phone-flag {
+    padding: 12px 10px 12px var(--pad-x);
+    color: var(--text);
+    font-size: var(--body-size);
+    border-right: 1px solid var(--border-tile);
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  .funnel-input--phone {
+    flex: 1;
+    padding: 12px var(--pad-x);
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: var(--font-family);
+    font-size: var(--body-size);
+    outline: none;
+  }
+
+  .funnel-input--phone::placeholder {
+    color: var(--text-muted);
+  }
+</style>

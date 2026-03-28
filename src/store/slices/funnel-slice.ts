@@ -5,6 +5,9 @@ import type { FunnelActions } from '@typedefs/store';
 import type { Screen, FunnelElement, ElementIndexes } from '@typedefs/funnel';
 import type { ProjectDocument } from '@typedefs/project';
 import type { HistoryEntry, HistoryState } from '@typedefs/ui';
+import { ComponentParser } from '@services/component-parser';
+import { ElementFactory } from '@services/element-factory';
+import { createDefaultScreen } from '@store/defaults';
 
 export interface FunnelSlice extends FunnelActions {
   project: ProjectDocument;
@@ -129,6 +132,14 @@ export const createFunnelSlice: StateCreator<
     addScreen: (screen) =>
       undoableUpdate('SCREEN_ADD', (draft) => {
         draft.funnel.screens[screen.id] = screen;
+      }),
+
+    addScreenWithElements: (screen, elements) =>
+      undoableUpdate('SCREEN_ADD_WITH_ELEMENTS', (draft) => {
+        draft.funnel.screens[screen.id] = screen;
+        for (const el of elements) {
+          draft.funnel.elements[el.id] = el;
+        }
       }),
 
     deleteScreen: (screenId) =>
@@ -266,13 +277,44 @@ export const createFunnelSlice: StateCreator<
       return newSlug;
     },
 
-    importScreenFromHtml: (_html, _fileName) => {
-      return '';
+    importScreenFromHtml: (html, fileName) => {
+      const state = get();
+      let def;
+      try {
+        def = ComponentParser.parse(html);
+      } catch (err) {
+        console.warn('[importScreenFromHtml] parse error:', err);
+        return '';
+      }
+
+      const screens = Object.values(state.project.funnel.screens);
+      const maxX = screens.length > 0 ? Math.max(...screens.map((s) => s.position.x)) : -350;
+      const refY = screens.length > 0 ? screens[0]!.position.y : 100;
+      const name = (fileName ?? '').replace(/\.html$/i, '') || def.meta.component || 'imported';
+      const newId = `screen-${nanoid(6)}`;
+      const newScreen = createDefaultScreen(newId, name, 'custom', { x: maxX + 350, y: refY }, screens.length);
+      const elements = ElementFactory.fromComponentDefinition(def, newId);
+
+      undoableUpdate('SCREEN_IMPORT_HTML', (draft) => {
+        draft.funnel.screens[newId] = newScreen;
+        for (const el of elements) {
+          draft.funnel.elements[el.id] = el;
+        }
+      });
+
+      return newId;
     },
 
     addElement: (element) =>
       undoableUpdate('ELEMENT_ADD', (draft) => {
         draft.funnel.elements[element.id] = element;
+      }),
+
+    addElementsBatch: (elements) =>
+      undoableUpdate('ELEMENTS_ADD_BATCH', (draft) => {
+        for (const el of elements) {
+          draft.funnel.elements[el.id] = el;
+        }
       }),
 
     deleteElement: (elementId) =>
@@ -312,11 +354,13 @@ export const createFunnelSlice: StateCreator<
         }
       }),
 
-    reorderElements: (screenId, orderedIds) =>
+    reorderElements: (screenId, orderedIds, parentId = null) =>
       undoableUpdate('ELEMENT_REORDER', (draft) => {
         orderedIds.forEach((id, index) => {
           const el = draft.funnel.elements[id];
-          if (el && el.screenId === screenId) el.order = index;
+          if (el && el.screenId === screenId && el.parentId === parentId) {
+            el.order = index;
+          }
         });
       }),
 

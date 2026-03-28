@@ -1,5 +1,5 @@
 import { useEffect, useCallback } from 'react';
-import { Link2, Link2Off, Group, Wand2 } from 'lucide-react';
+import { Link2, Link2Off, Group, Wand2, Lock, Unlock } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { useFunnelStore } from '@store/funnel-store';
 import styles from './MapToolbar.module.css';
@@ -7,8 +7,10 @@ import styles from './MapToolbar.module.css';
 const BLOCK_COLORS = ['#6366f1', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4'];
 
 export function MapToolbar() {
-  const linkMode = useFunnelStore((s) => s.ui.linkMode);
+  const linkMode    = useFunnelStore((s) => s.ui.linkMode);
   const setLinkMode = useFunnelStore((s) => s.setLinkMode);
+  const mapLocked   = useFunnelStore((s) => s.ui.mapLocked);
+  const setMapLocked = useFunnelStore((s) => s.setMapLocked);
 
   const handleCreateBlock = useCallback(() => {
     const state = useFunnelStore.getState();
@@ -52,6 +54,15 @@ export function MapToolbar() {
 
   return (
     <div className={styles.toolbar}>
+      <button
+        type="button"
+        className={`${styles.btn} ${mapLocked ? styles.active : ''}`}
+        onClick={() => setMapLocked(!mapLocked)}
+        title={mapLocked ? 'Разблокировать карту (Ctrl+Q)' : 'Заблокировать карту (Ctrl+Q)'}
+      >
+        {mapLocked ? <Lock size={16} /> : <Unlock size={16} />}
+      </button>
+      <div className={styles.separator} />
       <button
         type="button"
         className={`${styles.btn} ${linkMode ? styles.active : ''}`}

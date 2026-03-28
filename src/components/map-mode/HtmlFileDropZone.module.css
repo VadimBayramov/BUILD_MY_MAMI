@@ -1,0 +1,43 @@
+.zone {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: all;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px dashed transparent;
+  background: transparent;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.zone.over {
+  background: rgba(34, 197, 94, 0.07);
+  border-color: rgba(34, 197, 94, 0.45);
+}
+
+.badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(34, 197, 94, 0.9);
+  background: rgba(15, 20, 30, 0.88);
+  padding: 8px 20px;
+  border-radius: 24px;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  pointer-events: none;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  transition: color 0.15s, border-color 0.15s;
+}
+
+.over .badge {
+  color: rgba(74, 222, 128, 1);
+  border-color: rgba(74, 222, 128, 0.5);
+}
+
+.icon {
+  font-size: 16px;
+  line-height: 1;
+}

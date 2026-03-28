@@ -1,0 +1,189 @@
+<!--
+  @component: screen-gender-selection
+  @category: templates
+  @tags: screen, gender, survey, template
+  @description: Full gender selection screen
+  @thumbnail: /thumbnails/screen-gender-selection.png
+  @version: 1.0
+-->
+<div class="funnel-screen"
+     data-component="screen-gender-selection"
+     data-component-category="templates"
+     data-element-type="screen">
+
+  <div class="funnel-screen__container">
+
+    <div class="funnel-screen__header"
+         data-element-type="screen-header">
+      <div class="funnel-screen__progress-track">
+        <div class="funnel-screen__progress-fill" style="width: 14%"></div>
+      </div>
+    </div>
+
+    <div class="funnel-screen__body"
+         data-element-type="screen-body">
+
+      <h1 class="funnel-screen__heading"
+          data-element-type="heading"
+          data-editable="true">What is your gender?</h1>
+
+      <p class="funnel-screen__sub"
+         data-element-type="subheading"
+         data-editable="true">We'll personalize your plan based on your answer.</p>
+
+      <div class="funnel-gender-tiles"
+           data-element-type="option-tiles">
+
+        <button class="funnel-gender-tile"
+                data-element-type="tile"
+                data-editable="true"
+                data-value="male"
+                data-navigate-to="">
+          <span class="funnel-gender-tile__icon" aria-hidden="true">♂</span>
+          <span class="funnel-gender-tile__label"
+                data-element-type="tile-label"
+                data-editable="true">Male</span>
+        </button>
+
+        <button class="funnel-gender-tile"
+                data-element-type="tile"
+                data-editable="true"
+                data-value="female"
+                data-navigate-to="">
+          <span class="funnel-gender-tile__icon" aria-hidden="true">♀</span>
+          <span class="funnel-gender-tile__label"
+                data-element-type="tile-label"
+                data-editable="true">Female</span>
+        </button>
+
+      </div>
+
+      <button class="funnel-gender-other"
+              data-element-type="button"
+              data-editable="true"
+              data-value="other"
+              data-navigate-to="">
+        Prefer not to say
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<style>
+  .funnel-screen {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 100%;
+    background: var(--bg);
+    font-family: var(--font-family);
+  }
+
+  .funnel-screen__container {
+    width: 100%;
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--pad-x) var(--pad-y);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .funnel-screen__header {
+    padding: 16px 0 20px;
+  }
+
+  .funnel-screen__progress-track {
+    width: 100%;
+    height: 4px;
+    background: var(--border-tile);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .funnel-screen__progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  .funnel-screen__body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .funnel-screen__heading {
+    margin: 0;
+    color: var(--text);
+    font-size: var(--h1-size);
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .funnel-screen__sub {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--body-size);
+    text-align: center;
+  }
+
+  .funnel-gender-tiles {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .funnel-gender-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 28px 16px;
+    background: var(--card-bg);
+    border: 1.5px solid var(--border-tile);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: var(--transition);
+  }
+
+  .funnel-gender-tile:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow);
+  }
+
+  .funnel-gender-tile__icon {
+    font-size: 36px;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .funnel-gender-tile__label {
+    color: var(--text);
+    font-size: var(--option-font);
+    font-weight: 600;
+  }
+
+  .funnel-gender-other {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-family: var(--font-family);
+    font-size: var(--body-size);
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 4px 0;
+    transition: var(--transition);
+  }
+
+  .funnel-gender-other:hover {
+    color: var(--text);
+  }
+</style>

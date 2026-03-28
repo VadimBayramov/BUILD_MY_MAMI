@@ -14,6 +14,7 @@ function createActions() {
     setMode: vi.fn(),
     clearSelection: vi.fn(),
     toggleShortcutsModal: vi.fn(),
+    toggleMapLock: vi.fn(),
     rename: vi.fn(),
     editId: vi.fn(),
     fitView: vi.fn(),
@@ -23,7 +24,7 @@ function createActions() {
     prevInChain: vi.fn(),
     followDefault: vi.fn(),
     groupIntoBlock: vi.fn(),
-    togglePreview: vi.fn(),
+    toggleFocusedScreenMode: vi.fn(),
     openSearch: vi.fn(),
     goToStart: vi.fn(),
     goToEnd: vi.fn(),
@@ -269,13 +270,22 @@ describe('createKeyboardShortcutHandler', () => {
     expect(actions.groupIntoBlock).toHaveBeenCalledTimes(1);
   });
 
-  test('Space triggers togglePreview', () => {
+  test('Space triggers toggleFocusedScreenMode', () => {
     const actions = createActions();
     const handleKeyDown = createKeyboardShortcutHandler(actions);
 
     handleKeyDown(new KeyboardEvent('keydown', { key: ' ' }));
 
-    expect(actions.togglePreview).toHaveBeenCalledTimes(1);
+    expect(actions.toggleFocusedScreenMode).toHaveBeenCalledTimes(1);
+  });
+
+  test('Space shortcut also works when browser reports the physical Space code', () => {
+    const actions = createActions();
+    const handleKeyDown = createKeyboardShortcutHandler(actions);
+
+    handleKeyDown(new KeyboardEvent('keydown', { key: 'Space', code: 'Space' }));
+
+    expect(actions.toggleFocusedScreenMode).toHaveBeenCalledTimes(1);
   });
 
   test('Ctrl+Shift+F triggers openSearch', () => {
@@ -329,7 +339,7 @@ describe('createKeyboardShortcutHandler', () => {
     handleKeyDown(new KeyboardEvent('keydown', { key: 'End', bubbles: true }), input);
 
     expect(actions.nextInChain).not.toHaveBeenCalled();
-    expect(actions.togglePreview).not.toHaveBeenCalled();
+    expect(actions.toggleFocusedScreenMode).not.toHaveBeenCalled();
     expect(actions.goToStart).not.toHaveBeenCalled();
     expect(actions.goToEnd).not.toHaveBeenCalled();
   });

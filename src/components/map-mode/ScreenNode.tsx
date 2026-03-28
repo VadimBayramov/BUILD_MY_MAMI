@@ -1,7 +1,7 @@
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { Handle, Position, type NodeProps } from '@xyflow/react';
+import { useDroppable } from '@dnd-kit/core';
 import {
-  Smartphone,
   Copy,
   Trash2,
   ClipboardCopy,
@@ -10,39 +10,20 @@ import {
   RefreshCw,
   Unlink,
 } from 'lucide-react';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { useFunnelStore } from '@store/funnel-store';
-import { SortableElementRow } from './SortableElementRow';
+import { getScreenHtml } from '@services/html-cache';
+import { buildPreviewDocument } from '@utils/preview-document';
 import styles from './ScreenNode.module.css';
 
-// Stable fallback — prevents infinite re-renders when byScreen[id] is undefined
-const EMPTY_IDS: string[] = [];
-
-const ELEMENT_TYPE_ABBR: Record<string, string> = {
-  heading: 'H',
-  paragraph: 'P',
-  image: 'Img',
-  'hero-image': 'Img',
-  button: 'Btn',
-  option: 'Opt',
-  'option-tile': 'Tile',
-  container: 'Box',
-  spacer: '—',
-  'progress-bar': '%',
-  input: 'Input',
-  card: 'Card',
-  paywall: '$',
-  'raw-html': 'HTML',
-  'survey-options': 'Survey',
-  footer: 'Footer',
-  divider: 'Line',
-  icon: 'Icon',
-  video: 'Vid',
-  review: 'Rev',
-  timer: 'Timer',
-  loader: 'Load',
-  custom: 'Custom',
-};
+const PREVIEW_STYLE = `
+  html, body {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+  body::-webkit-scrollbar { width: 3px; }
+  body::-webkit-scrollbar-track { background: transparent; }
+  body::-webkit-scrollbar-thumb { background: #ccc; border-radius: 2px; }
+`;
 
 interface ScreenNodeData {
   label: string;
@@ -57,24 +38,40 @@ interface ScreenNodeData {
 }
 
 const SCREEN_TYPE_COLORS: Record<string, string> = {
-  survey: '#3b82f6',
+  survey:   '#3b82f6',
   question: '#8b5cf6',
-  result: '#10b981',
-  loader: '#f59e0b',
-  form: '#6366f1',
-  paywall: '#ef4444',
-  custom: '#6b7280',
+  result:   '#10b981',
+  loader:   '#f59e0b',
+  form:     '#6366f1',
+  paywall:  '#ef4444',
+  custom:   '#6b7280',
 };
 
 export const ScreenNode = memo(function ScreenNode({ data, selected, id }: NodeProps) {
   const nodeData = data as ScreenNodeData;
   const typeColor = SCREEN_TYPE_COLORS[nodeData.screenType] ?? '#6b7280';
 
-  const elementIds = useFunnelStore(
-    useCallback((s) => s.elementIndexes.byScreen[id] ?? EMPTY_IDS, [id]),
+  const screen = useFunnelStore(
+    useCallback((state) => state.project.funnel.screens[id] ?? null, [id]),
   );
-  const elements = useFunnelStore((s) => s.project.funnel.elements);
-  const selectedElementIds = useFunnelStore((s) => s.ui.selectedElementIds);
+  const elements = useFunnelStore((state) => state.project.funnel.elements);
+  const elementIndexes = useFunnelStore((state) => state.elementIndexes);
+  const globalStyles = useFunnelStore((state) => state.project.funnel.globalStyles);
+  const mapLocked = useFunnelStore((state) => state.ui.mapLocked);
+
+  // Make the phone body a dnd-kit drop target so block library items land here
+  const { setNodeRef: setDropRef, isOver: isDropOver } = useDroppable({ id });
+  const hasElements = (elementIndexes.byScreen[id]?.length ?? 0) > 0;
+
+  const html = useMemo(() => {
+    if (!screen) return '';
+    return getScreenHtml(id, elements, elementIndexes, screen, globalStyles);
+  }, [screen, id, elements, elementIndexes, globalStyles]);
+
+  const srcDoc = useMemo(() => {
+    const doc = buildPreviewDocument(html);
+    return doc.replace('</head>', `<style>${PREVIEW_STYLE}</style></head>`);
+  }, [html]);
 
   const hasWarning =
     nodeData.isDeadEnd ||
@@ -87,18 +84,24 @@ export const ScreenNode = memo(function ScreenNode({ data, selected, id }: NodeP
       className={[
         styles.node,
         selected ? styles.selected : '',
-        nodeData.isInCycle ? styles.inCycle :
+        nodeData.isInCycle          ? styles.inCycle :
         nodeData.isDuplicateDefault ? styles.duplicateDefault :
-        nodeData.isDeadEnd ? styles.deadEnd :
-        nodeData.isUnreachable ? styles.unreachable : '',
+        nodeData.isDeadEnd          ? styles.deadEnd :
+        nodeData.isUnreachable      ? styles.unreachable : '',
       ].join(' ')}
     >
-      <Handle type="target" position={Position.Left} className={styles.handle} />
+      <Handle
+        type="target"
+        position={Position.Left}
+        className={styles.handle}
+        style={mapLocked ? { opacity: 0, pointerEvents: 'none' } : undefined}
+      />
       <Handle
         type="target"
         position={Position.Left}
         id="target-zone"
         className={styles.handleZone}
+        style={mapLocked ? { pointerEvents: 'none' } : undefined}
       />
 
       {/* Toolbar on select */}
@@ -146,7 +149,7 @@ export const ScreenNode = memo(function ScreenNode({ data, selected, id }: NodeP
         <div className={styles.startBadge} title="Start screen">START</div>
       )}
 
-      {/* Warning badge — highest-severity error wins */}
+      {/* Warning badge */}
       {hasWarning && (
         <div
           className={styles.warningBadge}
@@ -164,47 +167,56 @@ export const ScreenNode = memo(function ScreenNode({ data, selected, id }: NodeP
         </div>
       )}
 
-      <div className={styles.phone}>
-        <div className={styles.statusBar}>
-          <div className={styles.notch} />
-        </div>
+      {/* ── iPhone 14 frame ── */}
+      <div
+        ref={setDropRef}
+        className={`${styles.phone} ${isDropOver ? styles.dropOver : ''}`}
+      >
+        {/* Side buttons */}
+        <div className={styles.btnVolUp} />
+        <div className={styles.btnVolDown} />
+        <div className={styles.btnPower} />
+
+        {/* Screen area */}
         <div className={styles.screen}>
-          {elementIds.length > 0 ? (
-            <div className={styles.elementList}>
-              <SortableContext items={elementIds} strategy={verticalListSortingStrategy}>
-                {elementIds.map((elId) => {
-                  const el = elements[elId];
-                  if (!el) return null;
-                  return (
-                    <SortableElementRow
-                      key={elId}
-                      elementId={elId}
-                      screenId={id}
-                      abbr={ELEMENT_TYPE_ABBR[el.type] ?? el.type}
-                      content={el.content || el.type}
-                      isSelected={selectedElementIds.includes(elId)}
-                    />
-                  );
-                })}
-              </SortableContext>
-            </div>
-          ) : (
-            <>
-              <Smartphone size={24} strokeWidth={1} className={styles.phoneIcon} />
-              <span className={styles.screenLabel}>{nodeData.label}</span>
-            </>
-          )}
+          {/* Dynamic Island */}
+          <div className={styles.dynamicIsland} />
+
+          {/* Content */}
+          <div className={styles.screenContent}>
+            {hasElements ? (
+              <iframe
+                className={styles.previewFrame}
+                srcDoc={srcDoc}
+                sandbox="allow-same-origin"
+                title={`Map preview: ${nodeData.label}`}
+              />
+            ) : (
+              <div className={styles.emptyHint}>
+                <span className={styles.screenLabel}>{nodeData.label}</span>
+                <span className={styles.emptySubHint}>
+                  {isDropOver ? 'Release to add' : 'Drop blocks here'}
+                </span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
+      {/* Footer */}
       <div className={styles.footer}>
         <span className={styles.typeBadge} style={{ background: typeColor }}>
-          {nodeData.screenType}
+          {nodeData.screenType.toUpperCase()}
         </span>
         <span className={styles.orderNum}>#{nodeData.order}</span>
       </div>
 
-      <Handle type="source" position={Position.Right} className={styles.handle} />
+      <Handle
+        type="source"
+        position={Position.Right}
+        className={styles.handle}
+        style={mapLocked ? { opacity: 0, pointerEvents: 'none' } : undefined}
+      />
     </div>
   );
 });

@@ -1,0 +1,98 @@
+<!--
+  @component: loader-analyzing
+  @category: feedback
+  @tags: loader, analyzing, progress, animation
+  @description: "Analyzing your results" loader
+  @thumbnail: /thumbnails/loader-analyzing.png
+  @version: 1.0
+-->
+<div class="funnel-loader-analyzing"
+     data-component="loader-analyzing"
+     data-component-category="feedback"
+     data-element-type="loader-analyzing">
+
+  <div class="funnel-loader-analyzing__bars">
+    <span class="funnel-loader-analyzing__bar"></span>
+    <span class="funnel-loader-analyzing__bar"></span>
+    <span class="funnel-loader-analyzing__bar"></span>
+    <span class="funnel-loader-analyzing__bar"></span>
+    <span class="funnel-loader-analyzing__bar"></span>
+  </div>
+
+  <p class="funnel-loader-analyzing__text"
+     data-element-type="loader-text"
+     data-editable="true">Analyzing your results…</p>
+
+  <div class="funnel-loader-analyzing__track">
+    <div class="funnel-loader-analyzing__fill"></div>
+  </div>
+
+</div>
+
+<style>
+  .funnel-loader-analyzing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    padding: var(--pad-y) var(--pad-x);
+    font-family: var(--font-family);
+  }
+
+  .funnel-loader-analyzing__bars {
+    display: flex;
+    align-items: flex-end;
+    gap: 5px;
+    height: 40px;
+  }
+
+  .funnel-loader-analyzing__bar {
+    display: block;
+    width: 8px;
+    background: var(--accent);
+    border-radius: 4px;
+    animation: analyzingBar 1.2s ease-in-out infinite;
+  }
+
+  .funnel-loader-analyzing__bar:nth-child(1) { height: 20px; animation-delay: 0s; }
+  .funnel-loader-analyzing__bar:nth-child(2) { height: 32px; animation-delay: 0.1s; }
+  .funnel-loader-analyzing__bar:nth-child(3) { height: 40px; animation-delay: 0.2s; }
+  .funnel-loader-analyzing__bar:nth-child(4) { height: 28px; animation-delay: 0.3s; }
+  .funnel-loader-analyzing__bar:nth-child(5) { height: 16px; animation-delay: 0.4s; }
+
+  @keyframes analyzingBar {
+    0%, 100% { opacity: 0.4; transform: scaleY(0.7); }
+    50% { opacity: 1; transform: scaleY(1); }
+  }
+
+  .funnel-loader-analyzing__text {
+    margin: 0;
+    color: var(--text);
+    font-size: var(--option-font);
+    font-weight: 600;
+    text-align: center;
+  }
+
+  .funnel-loader-analyzing__track {
+    width: 100%;
+    max-width: 280px;
+    height: 6px;
+    background: var(--border-tile);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .funnel-loader-analyzing__fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    animation: analyzingProgress 3s ease-in-out infinite;
+  }
+
+  @keyframes analyzingProgress {
+    0% { width: 0%; }
+    80% { width: 90%; }
+    100% { width: 100%; }
+  }
+</style>

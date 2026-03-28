@@ -1,0 +1,82 @@
+<!--
+  @component: header-with-progress
+  @category: navigation
+  @tags: header, progress, back
+  @description: Header with back button and progress bar
+  @thumbnail: /thumbnails/header-with-progress.png
+  @version: 1.0
+-->
+<header class="funnel-header"
+        data-component="header-with-progress"
+        data-component-category="navigation"
+        data-element-type="header">
+
+  <button class="funnel-header__back"
+          data-element-type="back-btn"
+          data-action="back"
+          aria-label="Go back">←</button>
+
+  <div class="funnel-header__progress-track">
+    <div class="funnel-header__progress-fill"
+         data-element-type="progress-fill"
+         style="width: 42%">
+    </div>
+  </div>
+
+  <span class="funnel-header__close"
+        data-element-type="close-btn"
+        data-action="close"
+        aria-label="Close">✕</span>
+
+</header>
+
+<style>
+  .funnel-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px var(--pad-x);
+    background: var(--bg);
+    border-bottom: 1px solid var(--border-tile);
+    font-family: var(--font-family);
+  }
+
+  .funnel-header__back,
+  .funnel-header__close {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+  }
+
+  .funnel-header__back:hover,
+  .funnel-header__close:hover {
+    background: var(--border-tile);
+    color: var(--text);
+  }
+
+  .funnel-header__progress-track {
+    flex: 1;
+    height: 4px;
+    background: var(--border-tile);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .funnel-header__progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+    transition: width 0.4s ease;
+  }
+</style>

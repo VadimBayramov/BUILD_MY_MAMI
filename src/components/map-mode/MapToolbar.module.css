@@ -40,3 +40,10 @@
 .label {
   line-height: 1;
 }
+
+.separator {
+  width: 1px;
+  height: 18px;
+  background: var(--builder-border);
+  margin: 0 2px;
+}

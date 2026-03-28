@@ -44,6 +44,7 @@ export function ScreenEdge({
   targetPosition,
   selected,
   data,
+  markerEnd,
 }: EdgeProps) {
   const edgeData = (data ?? {}) as ScreenEdgeData;
   const status: ConnectionStatus = edgeData.status ?? 'plain';
@@ -100,6 +101,7 @@ export function ScreenEdge({
       <BaseEdge
         id={id}
         path={edgePath}
+        markerEnd={markerEnd}
         style={{
           stroke,
           strokeWidth: selected ? 2.5 : 1.5,

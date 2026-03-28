@@ -1,0 +1,53 @@
+<!--
+  @component: social-proof-counter
+  @category: social-proof
+  @tags: counter, users, social proof
+  @description: "12,453 users joined" counter
+  @thumbnail: /thumbnails/social-proof-counter.png
+  @version: 1.0
+-->
+<div class="funnel-counter"
+     data-component="social-proof-counter"
+     data-component-category="social-proof"
+     data-element-type="counter">
+
+  <span class="funnel-counter__icon" aria-hidden="true">👥</span>
+
+  <span class="funnel-counter__number"
+        data-element-type="counter-number"
+        data-editable="true">12,453</span>
+
+  <span class="funnel-counter__label"
+        data-element-type="counter-label"
+        data-editable="true">people have already joined</span>
+
+</div>
+
+<style>
+  .funnel-counter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px var(--pad-x);
+    font-family: var(--font-family);
+  }
+
+  .funnel-counter__icon {
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .funnel-counter__number {
+    color: var(--accent);
+    font-size: var(--option-font);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .funnel-counter__label {
+    color: var(--text-muted);
+    font-size: var(--body-size);
+  }
+</style>

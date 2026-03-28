@@ -1,0 +1,51 @@
+<!--
+  @component: icon-text
+  @category: content
+  @tags: icon, text, feature
+  @description: Icon with label
+  @thumbnail: /thumbnails/icon-text.png
+  @version: 1.0
+-->
+<div class="funnel-icon-text"
+     data-component="icon-text"
+     data-component-category="content"
+     data-element-type="icon-text">
+
+  <span class="funnel-icon-text__icon"
+        data-element-type="icon"
+        data-editable="true"
+        aria-hidden="true">✓</span>
+
+  <span class="funnel-icon-text__label"
+        data-element-type="label"
+        data-editable="true">Feature or benefit description</span>
+
+</div>
+
+<style>
+  .funnel-icon-text {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 6px 0;
+    font-family: var(--font-family);
+  }
+
+  .funnel-icon-text__icon {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    font-size: 16px;
+  }
+
+  .funnel-icon-text__label {
+    color: var(--text);
+    font-size: var(--body-size);
+    line-height: 1.4;
+  }
+</style>

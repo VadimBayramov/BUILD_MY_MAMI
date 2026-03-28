@@ -1,0 +1,57 @@
+<!--
+  @component: discount-timer
+  @category: payment
+  @tags: discount, timer, urgency, paywall
+  @description: Countdown discount banner
+  @thumbnail: /thumbnails/discount-timer.png
+  @version: 1.0
+-->
+<div class="funnel-discount-banner"
+     data-component="discount-timer"
+     data-component-category="payment"
+     data-element-type="discount-banner"
+     data-duration="900">
+
+  <span class="funnel-discount-banner__icon" aria-hidden="true">⏰</span>
+
+  <span class="funnel-discount-banner__text"
+        data-element-type="text"
+        data-editable="true">Special offer expires in</span>
+
+  <span class="funnel-discount-banner__timer"
+        data-element-type="timer">15:00</span>
+
+</div>
+
+<style>
+  .funnel-discount-banner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 12px var(--pad-x);
+    background: var(--accent);
+    border-radius: var(--radius);
+    font-family: var(--font-family);
+  }
+
+  .funnel-discount-banner__icon {
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  .funnel-discount-banner__text {
+    color: #fff;
+    font-size: var(--body-size);
+    font-weight: 500;
+  }
+
+  .funnel-discount-banner__timer {
+    color: #fff;
+    font-size: var(--option-font);
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    min-width: 4ch;
+  }
+</style>

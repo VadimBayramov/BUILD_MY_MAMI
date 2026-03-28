@@ -1,0 +1,98 @@
+<!--
+  @component: result-personality
+  @category: result
+  @tags: result, type, personality
+  @description: Personality type result card
+  @thumbnail: /thumbnails/result-personality.png
+  @version: 1.0
+-->
+<div class="funnel-personality"
+     data-component="result-personality"
+     data-component-category="result"
+     data-element-type="personality-result">
+
+  <div class="funnel-personality__badge"
+       data-element-type="type-badge">
+    <span class="funnel-personality__badge-icon" aria-hidden="true">🌟</span>
+    <span class="funnel-personality__type"
+          data-element-type="personality-type"
+          data-editable="true">The Achiever</span>
+  </div>
+
+  <p class="funnel-personality__desc"
+     data-element-type="personality-description"
+     data-editable="true">
+    You are driven, goal-oriented, and thrive on challenge. Your determination sets you apart and fuels consistent progress.
+  </p>
+
+  <div class="funnel-personality__traits">
+    <span class="funnel-personality__trait"
+          data-element-type="trait"
+          data-editable="true">Ambitious</span>
+    <span class="funnel-personality__trait"
+          data-element-type="trait"
+          data-editable="true">Focused</span>
+    <span class="funnel-personality__trait"
+          data-element-type="trait"
+          data-editable="true">Resilient</span>
+  </div>
+
+</div>
+
+<style>
+  .funnel-personality {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: var(--pad-y) var(--pad-x);
+    font-family: var(--font-family);
+    text-align: center;
+  }
+
+  .funnel-personality__badge {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px 28px;
+    background: var(--card-bg);
+    border: 2px solid var(--accent);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  .funnel-personality__badge-icon {
+    font-size: 40px;
+  }
+
+  .funnel-personality__type {
+    color: var(--accent);
+    font-size: var(--h2-size);
+    font-weight: 800;
+  }
+
+  .funnel-personality__desc {
+    margin: 0;
+    color: var(--text);
+    font-size: var(--body-size);
+    line-height: 1.6;
+    max-width: 320px;
+  }
+
+  .funnel-personality__traits {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .funnel-personality__trait {
+    padding: 4px 14px;
+    background: var(--border-tile);
+    border-radius: 999px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+  }
+</style>

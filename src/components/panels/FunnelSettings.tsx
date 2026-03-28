@@ -1,5 +1,6 @@
-import { Settings, Palette } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { useFunnelStore } from '@store/funnel-store';
+import { GlobalStylesPanel } from './sections/GlobalStylesPanel';
 import styles from './FunnelSettings.module.css';
 
 export function FunnelSettings() {
@@ -30,10 +31,7 @@ export function FunnelSettings() {
 
       <div className={styles.section}>
         <div className={styles.sectionTitle}>Global Styles</div>
-        <div className={styles.placeholder}>
-          <Palette size={24} strokeWidth={1} />
-          <p>CSS variables editor coming in Phase 2</p>
-        </div>
+        <GlobalStylesPanel />
       </div>
     </div>
   );

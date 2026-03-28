@@ -1,27 +1,291 @@
-.placeholder {
+/* ── Root layout ─────────────────────────────────────────────────────────── */
+
+.root {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--builder-bg);
+  overflow: hidden;
+}
+
+/* ── Back bar ────────────────────────────────────────────────────────────── */
+
+.backBar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--builder-border);
+  flex-shrink: 0;
+}
+
+.backBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border: 1px solid var(--builder-border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--builder-text-muted);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--builder-transition);
+  white-space: nowrap;
+}
+
+.backBtn:hover {
+  background: var(--builder-panel-hover);
+  color: var(--builder-text);
+}
+
+.screenNav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+}
+
+.navBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--builder-text-muted);
+  cursor: pointer;
+  transition: var(--builder-transition);
+}
+
+.navBtn:hover:not(:disabled) {
+  background: var(--builder-panel-hover);
+  color: var(--builder-text);
+}
+
+.navBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.screenTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--builder-text);
+  min-width: 120px;
+  text-align: center;
+}
+
+.screenCounter {
+  font-size: 12px;
+  color: var(--builder-text-muted);
+  white-space: nowrap;
+}
+
+/* ── Stage (centered phone) ──────────────────────────────────────────────── */
+
+.stage {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 28px 24px;
+}
+
+/* ── iPhone 14 large frame ──────────────────────────────────────────────── */
+
+.phoneFrame {
+  position: relative;
+  width: 356px;
+  height: 770px;
+  background: #111;
+  border-radius: 54px;
+  border: 5px solid #222;
+  box-shadow:
+    inset 0 0 0 1.5px #333,
+    0 28px 72px rgba(0, 0, 0, 0.68),
+    0 6px 16px rgba(0, 0, 0, 0.44);
+  flex-shrink: 0;
+}
+
+/* Side buttons */
+.btnVolUp,
+.btnVolDown,
+.btnPower {
+  position: absolute;
+  background: #1e1e1e;
+  border-radius: 3px;
+  box-shadow: -1px 0 0 #444 inset;
+}
+
+.btnVolUp   { left: -6px; top: 112px; width: 4px; height: 42px; }
+.btnVolDown { left: -6px; top: 164px; width: 4px; height: 42px; }
+.btnPower   { right: -6px; top: 128px; width: 4px; height: 58px; }
+
+/* Screen */
+.phoneScreen {
+  position: absolute;
+  inset: 5px;
+  border-radius: 48px;
+  background: #ffffff;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.dynamicIsland {
+  flex-shrink: 0;
+  align-self: center;
+  margin-top: 15px;
+  width: 102px;
+  height: 24px;
+  background: #111;
+  border-radius: 12px;
+}
+
+/* Element list inside phone */
+.elementList {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 8px 0 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #ddd transparent;
+}
+
+.phoneEmpty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 24px;
+  text-align: center;
+  font-size: 12px;
+  color: #aaa;
+  line-height: 1.5;
+}
+
+/* ── Element rows ────────────────────────────────────────────────────────── */
+
+.elRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  border-radius: 4px;
+  margin: 1px 6px;
+  transition: background 0.1s;
+  min-height: 32px;
+}
+
+.elRow:hover         { background: rgba(59,130,246,.08); }
+.elRowSelected       { background: rgba(59,130,246,.15); outline: 1px solid rgba(59,130,246,.4); }
+
+.elHandle {
+  color: #ccc;
+  cursor: grab;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.elHandle:active { cursor: grabbing; }
+
+.elAbbr {
+  font-size: 10px;
+  font-weight: 700;
+  font-family: monospace;
+  color: #3b82f6;
+  min-width: 32px;
+  flex-shrink: 0;
+}
+
+.elContent {
+  font-size: 11px;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+}
+
+.elActions {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 0.1s;
+  flex-shrink: 0;
+}
+
+.elRow:hover .elActions { opacity: 1; }
+
+.elBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 3px;
+  background: transparent;
+  color: #888;
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+
+.elBtn:hover         { background: #e5e7eb; color: #333; }
+.elBtnDanger:hover   { background: rgba(239,68,68,.1); color: #ef4444; }
+
+/* ── Chip row ────────────────────────────────────────────────────────────── */
+
+.chipRow {
+  display: flex;
+  gap: 4px;
+  padding: 8px 12px;
+  border-top: 1px solid var(--builder-border);
+  overflow-x: auto;
+  flex-shrink: 0;
+  scrollbar-width: thin;
+}
+
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--builder-border);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--builder-text-muted);
+  font-size: 11px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: var(--builder-transition);
+}
+
+.chip:hover   { background: var(--builder-panel-hover); color: var(--builder-text); }
+.chipActive   { background: var(--builder-accent) !important; border-color: var(--builder-accent) !important; color: #fff !important; }
+
+.chipIdx  { font-size: 10px; opacity: 0.6; }
+.chipName { max-width: 90px; overflow: hidden; text-overflow: ellipsis; }
+
+/* ── Empty state ─────────────────────────────────────────────────────────── */
+
+.empty {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 16px;
   height: 100%;
-  gap: 12px;
   color: var(--builder-text-muted);
-  text-align: center;
-}
-
-.placeholder h2 {
-  font-size: 20px;
-  font-weight: 600;
-  color: var(--builder-text);
-}
-
-.placeholder p {
   font-size: 14px;
-  max-width: 320px;
-}
-
-.hint {
-  font-size: 12px !important;
-  font-style: italic;
-  opacity: 0.6;
 }

@@ -1,4 +1,5 @@
 import type { ComponentDefinition, ComponentManifest, ManifestEntry } from '@typedefs/component';
+import { ComponentParser } from './component-parser';
 
 export class ComponentRegistry {
   private readonly byId = new Map<string, ComponentDefinition>();
@@ -48,6 +49,49 @@ export class ComponentRegistry {
       }
     }
     return order;
+  }
+
+  // ── Lazy fetch (Phase 3+) ────────────────────────────────────────────────
+
+  /**
+   * Fetch a component HTML file, parse it into a ComponentDefinition,
+   * cache it, and return it. Returns null on network or parse error.
+   */
+  async fetchComponent(entry: ManifestEntry): Promise<ComponentDefinition | null> {
+    if (!entry.file) return null;
+    try {
+      const res = await fetch(`/block-library/${entry.file}`);
+      if (!res.ok) {
+        console.warn(`[ComponentRegistry] fetch failed ${entry.file}: ${res.status}`);
+        return null;
+      }
+      const html = await res.text();
+      const definition = ComponentParser.parse(html);
+      this.register(definition);
+      return definition;
+    } catch (err) {
+      console.warn(`[ComponentRegistry] error fetching ${entry.file}:`, err);
+      return null;
+    }
+  }
+
+  /**
+   * Return a fully-parsed ComponentDefinition for the given id.
+   * Uses the in-memory cache on repeat calls — HTML is fetched at most once.
+   */
+  async getOrFetch(componentId: string): Promise<ComponentDefinition | null> {
+    const cached = this.get(componentId);
+    if (cached) return cached;
+
+    const entry = this.manifestEntries.find((e) => e.id === componentId);
+    if (!entry) {
+      console.warn(`[ComponentRegistry] no manifest entry for "${componentId}"`);
+      return null;
+    }
+
+    if (!entry.file) return null;
+
+    return this.fetchComponent(entry);
   }
 
   /**

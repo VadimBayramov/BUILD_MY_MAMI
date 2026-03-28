@@ -20,6 +20,7 @@ export interface UIState {
   draggedItem: DraggedItem | null;
   clipboard: ClipboardData | null;
   linkMode: boolean;
+  mapLocked: boolean;
   leftPanelWidth: number;
   rightPanelWidth: number;
   leftPanelCollapsed: boolean;

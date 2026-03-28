@@ -1,0 +1,78 @@
+<!--
+  @component: option-list
+  @category: interactive
+  @tags: survey, options, selection, list
+  @description: Vertical list of selectable options
+  @thumbnail: /thumbnails/option-list.png
+  @version: 1.0
+-->
+<div class="funnel-options"
+     data-component="option-list"
+     data-component-category="interactive"
+     data-element-type="option-list">
+
+  <button class="funnel-option"
+          data-element-type="option"
+          data-editable="true"
+          data-value="option-1"
+          data-navigate-to="">
+    Option 1
+  </button>
+
+  <button class="funnel-option"
+          data-element-type="option"
+          data-editable="true"
+          data-value="option-2"
+          data-navigate-to="">
+    Option 2
+  </button>
+
+  <button class="funnel-option"
+          data-element-type="option"
+          data-editable="true"
+          data-value="option-3"
+          data-navigate-to="">
+    Option 3
+  </button>
+
+</div>
+
+<style>
+  .funnel-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    font-family: var(--font-family);
+  }
+
+  .funnel-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 14px var(--pad-x);
+    background: var(--card-bg);
+    border: 1.5px solid var(--border-tile);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font-family);
+    font-size: var(--option-font);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+  }
+
+  .funnel-option:hover {
+    border-color: var(--accent);
+    background: var(--bg);
+    box-shadow: var(--shadow);
+  }
+
+  .funnel-option.selected {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: #fff;
+  }
+</style>

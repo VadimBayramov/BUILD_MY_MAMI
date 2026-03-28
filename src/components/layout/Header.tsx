@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { nanoid } from 'nanoid';
 import { useFunnelStore } from '@store/funnel-store';
+import { openFunnelPreview } from '@services/funnel-preview';
 import type { Mode } from '@typedefs/ui';
 import styles from './Header.module.css';
 
@@ -182,7 +183,19 @@ export function Header() {
 
         <div className={styles.divider} />
 
-        <button className={styles.iconBtn} title="Preview (Ctrl+P)">
+        <button
+          className={styles.iconBtn}
+          title="Open preview in browser (Ctrl+P)"
+          onClick={() => {
+            const s = useFunnelStore.getState();
+            openFunnelPreview(
+              s.project.funnel.screens,
+              s.project.funnel.elements,
+              s.elementIndexes,
+              s.project.funnel.globalStyles,
+            );
+          }}
+        >
           <Eye size={18} />
         </button>
         <button className={styles.iconBtn} title="Save (Ctrl+S)" onClick={() => void saveProject()}>

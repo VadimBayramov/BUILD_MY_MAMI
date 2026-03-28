@@ -1,0 +1,93 @@
+<!--
+  @component: review-card
+  @category: social-proof
+  @tags: review, testimonial, stars
+  @description: User review with star rating
+  @thumbnail: /thumbnails/review-card.png
+  @version: 1.0
+-->
+<div class="funnel-review"
+     data-component="review-card"
+     data-component-category="social-proof"
+     data-element-type="review-card">
+
+  <div class="funnel-review__stars" data-element-type="stars" aria-label="5 out of 5">
+    ★★★★★
+  </div>
+
+  <p class="funnel-review__text"
+     data-element-type="review-text"
+     data-editable="true">
+    "This completely changed how I approach my goals. I've seen incredible results in just a few weeks!"
+  </p>
+
+  <div class="funnel-review__author">
+    <span class="funnel-review__avatar" aria-hidden="true">👤</span>
+    <div>
+      <p class="funnel-review__name"
+         data-element-type="reviewer-name"
+         data-editable="true">Sarah M.</p>
+      <p class="funnel-review__meta"
+         data-element-type="reviewer-meta"
+         data-editable="true">Verified Customer</p>
+    </div>
+  </div>
+
+</div>
+
+<style>
+  .funnel-review {
+    width: 100%;
+    padding: var(--pad-y) var(--pad-x);
+    background: var(--card-bg);
+    border: 1px solid var(--border-tile);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    font-family: var(--font-family);
+  }
+
+  .funnel-review__stars {
+    color: var(--accent);
+    font-size: 18px;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+  }
+
+  .funnel-review__text {
+    margin: 0 0 16px;
+    color: var(--text);
+    font-size: var(--body-size);
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .funnel-review__author {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .funnel-review__avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--border-tile);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  .funnel-review__name {
+    margin: 0;
+    color: var(--text);
+    font-size: var(--body-size);
+    font-weight: 700;
+  }
+
+  .funnel-review__meta {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+</style>

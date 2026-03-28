@@ -1,0 +1,58 @@
+<!--
+  @component: progress-bar
+  @category: navigation
+  @tags: progress, bar, steps
+  @description: Horizontal progress indicator
+  @thumbnail: /thumbnails/progress-bar.png
+  @version: 1.0
+-->
+<div class="funnel-progress"
+     data-component="progress-bar"
+     data-component-category="navigation"
+     data-element-type="progress-bar"
+     data-current="3"
+     data-total="7">
+
+  <div class="funnel-progress__track">
+    <div class="funnel-progress__fill"
+         data-element-type="progress-fill"
+         style="width: 42%">
+    </div>
+  </div>
+
+  <span class="funnel-progress__label"
+        data-element-type="progress-label"
+        data-editable="true">Step 3 of 7</span>
+
+</div>
+
+<style>
+  .funnel-progress {
+    width: 100%;
+    padding: 8px 0;
+    font-family: var(--font-family);
+  }
+
+  .funnel-progress__track {
+    width: 100%;
+    height: 6px;
+    background: var(--border-tile);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 6px;
+  }
+
+  .funnel-progress__fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+
+  .funnel-progress__label {
+    display: block;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+</style>

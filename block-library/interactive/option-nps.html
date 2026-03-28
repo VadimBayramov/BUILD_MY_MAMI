@@ -1,0 +1,83 @@
+<!--
+  @component: option-nps
+  @category: interactive
+  @tags: nps, scale, 0-10
+  @description: Net Promoter Score 0–10
+  @thumbnail: /thumbnails/option-nps.png
+  @version: 1.0
+-->
+<div class="funnel-nps"
+     data-component="option-nps"
+     data-component-category="interactive"
+     data-element-type="nps">
+
+  <div class="funnel-nps__scale">
+    <button class="funnel-nps__btn" data-element-type="nps-btn" data-value="0">0</button>
+    <button class="funnel-nps__btn" data-element-type="nps-btn" data-value="1">1</button>
+    <button class="funnel-nps__btn" data-element-type="nps-btn" data-value="2">2</button>
+    <button class="funnel-nps__btn" data-element-type="nps-btn" data-value="3">3</button>
+    <button class="funnel-nps__btn" data-element-type="nps-btn" data-value="4">4</button>
+    <button class="funnel-nps__btn" data-element-type="nps-btn" data-value="5">5</button>
+    <button class="funnel-nps__btn" data-element-type="nps-btn" data-value="6">6</button>
+    <button class="funnel-nps__btn" data-element-type="nps-btn" data-value="7">7</button>
+    <button class="funnel-nps__btn" data-element-type="nps-btn" data-value="8">8</button>
+    <button class="funnel-nps__btn" data-element-type="nps-btn" data-value="9">9</button>
+    <button class="funnel-nps__btn" data-element-type="nps-btn" data-value="10">10</button>
+  </div>
+
+  <div class="funnel-nps__legend">
+    <span class="funnel-nps__legend-low"
+          data-element-type="label"
+          data-editable="true">Not likely</span>
+    <span class="funnel-nps__legend-high"
+          data-element-type="label"
+          data-editable="true">Extremely likely</span>
+  </div>
+
+</div>
+
+<style>
+  .funnel-nps {
+    width: 100%;
+    padding: 8px 0;
+    font-family: var(--font-family);
+  }
+
+  .funnel-nps__scale {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    flex-wrap: nowrap;
+  }
+
+  .funnel-nps__btn {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 4px;
+    background: var(--card-bg);
+    border: 1.5px solid var(--border-tile);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: var(--font-family);
+    font-size: var(--body-size);
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+  }
+
+  .funnel-nps__btn:hover,
+  .funnel-nps__btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  .funnel-nps__legend {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-size: 12px;
+  }
+</style>

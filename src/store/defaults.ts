@@ -1,5 +1,5 @@
 import { nanoid } from 'nanoid';
-import type { Screen, ScreenType, FunnelElement } from '@typedefs/funnel';
+import type { Screen, ScreenType } from '@typedefs/funnel';
 import type { ProjectDocument } from '@typedefs/project';
 
 export function createDefaultScreen(
@@ -42,78 +42,8 @@ export function createDefaultScreen(
   };
 }
 
-/** Seed elements on the welcome screen — used for testing ElementProperties (Phase 2).
- *  Remove when Phase 3 (HTML parser → FunnelElement) is complete. */
-function createSeedElements(): Record<string, FunnelElement> {
-  const base: Omit<FunnelElement, 'id' | 'order' | 'type' | 'tag' | 'content' | 'styles'> = {
-    screenId: 'welcome',
-    parentId: null,
-    classes: [],
-    attributes: {},
-    i18n: {},
-    visibility: 'always',
-    animation: 'none',
-    locked: false,
-    customCss: '',
-    editable: true,
-  };
-
-  const els: FunnelElement[] = [
-    {
-      ...base,
-      id: 'demo-heading-1',
-      order: 0,
-      type: 'heading',
-      tag: 'h1',
-      content: 'Welcome to FunnelBuilder',
-      styles: { 'font-size': '24px', 'font-weight': '700', 'text-align': 'center', 'color': '#1a1a2e' },
-    },
-    {
-      ...base,
-      id: 'demo-paragraph-1',
-      order: 1,
-      type: 'paragraph',
-      tag: 'p',
-      content: 'Answer a few quick questions to get started on your journey.',
-      styles: { 'font-size': '15px', 'color': '#6c757d', 'text-align': 'center' },
-    },
-    {
-      ...base,
-      id: 'demo-button-1',
-      order: 2,
-      type: 'button',
-      tag: 'button',
-      content: 'Get Started →',
-      styles: {
-        'background-color': '#3b82f6',
-        'color': '#ffffff',
-        'font-size': '16px',
-        'font-weight': '600',
-        'border-radius': '8px',
-        'padding-top': '12px',
-        'padding-bottom': '12px',
-        'padding-left': '32px',
-        'padding-right': '32px',
-        'cursor': 'pointer',
-      },
-    },
-    {
-      ...base,
-      id: 'demo-image-1',
-      order: 3,
-      type: 'hero-image',
-      tag: 'img',
-      content: '',
-      styles: { 'width': '100%', 'border-radius': '12px', 'overflow': 'hidden' },
-    },
-  ];
-
-  return Object.fromEntries(els.map((el) => [el.id, el]));
-}
-
 export function createDefaultProject(): ProjectDocument {
   const startScreen = createDefaultScreen('welcome', 'Welcome', 'survey', { x: 0, y: 0 }, 0);
-  const seedElements = createSeedElements();
   return {
     id: crypto.randomUUID(),
     schemaVersion: 1,
@@ -161,7 +91,7 @@ export function createDefaultProject(): ProjectDocument {
         '--font-family': "'Inter', sans-serif",
       },
       screens: { welcome: startScreen },
-      elements: seedElements,
+      elements: {},
       connections: [],
       blocks: [],
     },

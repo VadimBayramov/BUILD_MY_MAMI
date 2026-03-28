@@ -1,6 +1,9 @@
 export { parseHtml } from './html-parser';
 export type { ParsedElement, ParsedScreen } from './html-parser';
-export { generateHtml } from './html-generator';
+export { ComponentParser } from './component-parser';
+export { ElementFactory } from './element-factory';
+export { generateHtml, generateScreenHtml, renderFunnelElement } from './html-generator';
+export { getScreenHtml, invalidateScreenCache, invalidateAllCache, getCacheSize } from './html-cache';
 export { parseCss } from './css-parser';
 export type { CssRuleMap } from './css-parser';
 export { ComponentRegistry } from './component-registry';

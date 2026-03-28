@@ -1,3 +1,5 @@
+/* ── Node wrapper ─────────────────────────────────────────────────────────── */
+
 .node {
   position: relative;
   cursor: grab;
@@ -7,46 +9,24 @@
   cursor: grabbing;
 }
 
+/* ── Selection & diagnostic outlines ────────────────────────────────────── */
+
 .selected .phone {
-  box-shadow: 0 0 0 2px var(--builder-accent), 0 8px 24px rgba(59, 130, 246, 0.2);
+  outline: 2.5px solid var(--builder-accent);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.15), 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 
-/* Dead-end: no outgoing connections, non-terminal screen */
-.deadEnd .phone {
-  border-color: rgba(239, 68, 68, 0.55);
-}
+.deadEnd .phone          { outline: 2px solid rgba(239, 68, 68, 0.6); outline-offset: 3px; }
+.duplicateDefault .phone { outline: 2px solid rgba(245, 158, 11, 0.6); outline-offset: 3px; }
+.inCycle .phone          { outline: 2px solid rgba(249, 115, 22, 0.7); outline-offset: 3px; }
+.unreachable .phone      { outline: 2px solid rgba(107, 114, 128, 0.5); outline-offset: 3px; }
 
-/* Duplicate default: two isDefault connections from same screen */
-.duplicateDefault .phone {
-  border-color: rgba(245, 158, 11, 0.55);
-}
+/* ── Badges ──────────────────────────────────────────────────────────────── */
 
-/* In-cycle: lies on a circular default path — users loop forever */
-.inCycle .phone {
-  border-color: rgba(249, 115, 22, 0.65);
-}
-
-.inCycle .warningBadge {
-  background: rgba(249, 115, 22, 0.15);
-  border: 1.5px solid #f97316;
-  color: #f97316;
-}
-
-/* Unreachable: no path from start leads to this screen */
-.unreachable .phone {
-  border-color: rgba(107, 114, 128, 0.45);
-}
-
-.unreachable .warningBadge {
-  background: rgba(107, 114, 128, 0.15);
-  border: 1.5px solid #6b7280;
-  color: #6b7280;
-}
-
-/* START badge — top-left corner */
 .startBadge {
   position: absolute;
-  top: -10px;
+  top: -12px;
   left: 8px;
   background: #22c55e;
   color: #fff;
@@ -59,10 +39,9 @@
   pointer-events: none;
 }
 
-/* Warning badge — top-right corner */
 .warningBadge {
   position: absolute;
-  top: -10px;
+  top: -12px;
   right: 8px;
   display: flex;
   align-items: center;
@@ -74,21 +53,16 @@
   pointer-events: none;
 }
 
-.deadEnd .warningBadge {
-  background: rgba(239, 68, 68, 0.15);
-  border: 1.5px solid #ef4444;
-  color: #ef4444;
-}
+.deadEnd .warningBadge          { background: rgba(239,68,68,.15); border: 1.5px solid #ef4444; color: #ef4444; }
+.duplicateDefault .warningBadge { background: rgba(245,158,11,.15); border: 1.5px solid #f59e0b; color: #f59e0b; }
+.inCycle .warningBadge          { background: rgba(249,115,22,.15); border: 1.5px solid #f97316; color: #f97316; }
+.unreachable .warningBadge      { background: rgba(107,114,128,.15); border: 1.5px solid #6b7280; color: #6b7280; }
 
-.duplicateDefault .warningBadge {
-  background: rgba(245, 158, 11, 0.15);
-  border: 1.5px solid #f59e0b;
-  color: #f59e0b;
-}
+/* ── Toolbar (shown when selected) ──────────────────────────────────────── */
 
 .toolbar {
   position: absolute;
-  top: -36px;
+  top: -40px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -98,7 +72,7 @@
   border-radius: 8px;
   padding: 4px;
   z-index: 10;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .toolBtn {
@@ -115,93 +89,177 @@
   transition: var(--builder-transition);
 }
 
-.toolBtn:hover {
-  background: var(--builder-panel-hover);
-  color: var(--builder-text);
-}
+.toolBtn:hover            { background: var(--builder-panel-hover); color: var(--builder-text); }
+.toolBtn.danger:hover     { background: rgba(239,68,68,.15); color: var(--builder-error); }
 
-.toolBtn.danger:hover {
-  background: rgba(239, 68, 68, 0.15);
-  color: var(--builder-error);
-}
+/* ── iPhone 14 frame ────────────────────────────────────────────────────── */
 
 .phone {
-  width: 180px;
-  height: 320px;
-  background: #1a1d24;
-  border-radius: 20px;
-  border: 2px solid var(--builder-border);
+  position: relative;
+  width: 220px;
+  height: 476px;
+  background: #111;
+  border-radius: 34px;
+  border: 3px solid #222;
+  box-shadow:
+    inset 0 0 0 1px #333,
+    0 18px 48px rgba(0, 0, 0, 0.68),
+    0 4px 10px rgba(0, 0, 0, 0.44);
+  transition: box-shadow 0.2s ease, outline 0.15s ease;
+  overflow: hidden;
+}
+
+/* ── Drop-over state ─────────────────────────────────────────────────────── */
+
+.dropOver .screen {
+  background: rgba(59, 130, 246, 0.12) !important;
+}
+
+.dropOver::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 30px;
+  border: 2px dashed var(--builder-accent);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ── Side buttons (cosmetic) ─────────────────────────────────────────────── */
+
+.btnVolUp,
+.btnVolDown,
+.btnPower {
+  position: absolute;
+  background: #222;
+  border-radius: 2px;
+  box-shadow: -1px 0 0 #444 inset;
+}
+
+/* Volume up */
+.btnVolUp {
+  left: -4px;
+  top: 69px;
+  width: 3px;
+  height: 26px;
+}
+
+/* Volume down */
+.btnVolDown {
+  left: -4px;
+  top: 101px;
+  width: 3px;
+  height: 26px;
+}
+
+/* Power / sleep */
+.btnPower {
+  right: -4px;
+  top: 79px;
+  width: 3px;
+  height: 36px;
+}
+
+/* ── Screen (white display area) ─────────────────────────────────────────── */
+
+.screen {
+  position: absolute;
+  inset: 3px;
+  border-radius: 30px;
+  background: #ffffff;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  transition: box-shadow 0.2s ease;
 }
 
-.statusBar {
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* ── Dynamic Island ──────────────────────────────────────────────────────── */
+
+.dynamicIsland {
   flex-shrink: 0;
+  align-self: center;
+  margin-top: 9px;
+  width: 64px;
+  height: 15px;
+  background: #111;
+  border-radius: 8px;
 }
 
-.notch {
-  width: 60px;
-  height: 6px;
-  background: var(--builder-border);
-  border-radius: 3px;
+/* ── Screen content (element list or empty hint) ─────────────────────────── */
+
+.screenContent {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  overflow: hidden;
 }
 
-.screen {
+/*
+ * iframe renders at manager viewport width (346px = phoneFrame 356 − 2×border 5)
+ * so text wrapping matches exactly. scale(0.618) shrinks to map phone inner width
+ * (214px = phone 220 − 2×border 3): 346×0.618≈214px.
+ */
+.previewFrame {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 346px;
+  height: 730px;
+  transform: scale(0.618);
+  transform-origin: top left;
+  border: none;
+  display: block;
+  background: #ffffff;
+}
+
+.emptyHint {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  background: linear-gradient(
-    180deg,
-    rgba(59, 130, 246, 0.05) 0%,
-    rgba(59, 130, 246, 0.02) 100%
-  );
-}
-
-.phoneIcon {
-  color: var(--builder-text-muted);
-  opacity: 0.4;
+  gap: 4px;
+  user-select: none;
 }
 
 .screenLabel {
-  font-size: 16px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--builder-text);
+  color: #555;
   text-align: center;
-  padding: 0 12px;
+  padding: 0 8px;
   word-break: break-word;
 }
+
+.emptySubHint {
+  font-size: 8px;
+  color: #bbb;
+}
+
+/* ── Footer (type badge + order) ─────────────────────────────────────────── */
 
 .footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 0 0;
+  padding: 10px 4px 0;
 }
 
 .typeBadge {
-  font-size: 16px;
+  font-size: 10px;
   font-weight: 700;
-  text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: white;
-  padding: 4px 12px;
-  border-radius: 6px;
+  color: #fff;
+  padding: 3px 8px;
+  border-radius: 5px;
 }
 
 .orderNum {
-  font-size: 18px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--builder-text-muted);
 }
+
+/* ── React Flow handles ──────────────────────────────────────────────────── */
 
 .handle {
   width: 10px !important;
@@ -217,65 +275,11 @@
   height: 14px !important;
 }
 
-/* Element list inside phone screen */
-.elementList {
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  padding: 4px 0;
-  scrollbar-width: none;
-}
-
-.elementList::-webkit-scrollbar {
-  display: none;
-}
-
-.elementRow {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 8px;
-  cursor: pointer;
-  border-radius: 3px;
-  margin: 1px 4px;
-  transition: background 0.1s;
-  min-height: 22px;
-  flex-shrink: 0;
-}
-
-.elementRow:hover {
-  background: rgba(59, 130, 246, 0.15);
-}
-
-.elementRowSelected {
-  background: rgba(59, 130, 246, 0.3);
-  outline: 1px solid rgba(59, 130, 246, 0.6);
-}
-
-.elementAbbr {
-  font-size: 9px;
-  font-weight: 700;
-  font-family: monospace;
-  color: #60a5fa;
-  min-width: 24px;
-  flex-shrink: 0;
-}
-
-.elementContent {
-  font-size: 9px;
-  color: rgba(255, 255, 255, 0.6);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1;
-}
-
+/* Invisible wide target zone on the left side for easier connections */
 .handleZone {
   width: 60px !important;
   height: 100% !important;
-  min-height: 320px !important;
+  min-height: 476px !important;
   background: transparent !important;
   border: none !important;
   border-radius: 0 !important;
@@ -285,3 +289,4 @@
   top: 0 !important;
   transform: none !important;
 }
+

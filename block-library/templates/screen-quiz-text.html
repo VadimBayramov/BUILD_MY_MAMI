@@ -1,0 +1,188 @@
+<!--
+  @component: screen-quiz-text
+  @category: templates
+  @tags: screen, quiz, question, template
+  @description: Text quiz question screen
+  @thumbnail: /thumbnails/screen-quiz-text.png
+  @version: 1.0
+-->
+<div class="funnel-screen"
+     data-component="screen-quiz-text"
+     data-component-category="templates"
+     data-element-type="screen">
+
+  <div class="funnel-screen__container">
+
+    <div class="funnel-screen__header" data-element-type="screen-header">
+      <button class="funnel-screen__back"
+              data-element-type="back-btn"
+              data-action="back"
+              aria-label="Go back">←</button>
+      <div class="funnel-screen__progress-track">
+        <div class="funnel-screen__progress-fill" style="width: 43%"></div>
+      </div>
+      <span class="funnel-screen__step"
+            data-element-type="step-label"
+            data-editable="true">3/7</span>
+    </div>
+
+    <div class="funnel-screen__body" data-element-type="screen-body">
+
+      <h1 class="funnel-screen__heading"
+          data-element-type="heading"
+          data-editable="true">How would you describe your current lifestyle?</h1>
+
+      <div class="funnel-options" data-element-type="option-list">
+
+        <button class="funnel-option"
+                data-element-type="option"
+                data-editable="true"
+                data-value="sedentary"
+                data-navigate-to="">
+          Mostly sedentary
+        </button>
+
+        <button class="funnel-option"
+                data-element-type="option"
+                data-editable="true"
+                data-value="light"
+                data-navigate-to="">
+          Lightly active
+        </button>
+
+        <button class="funnel-option"
+                data-element-type="option"
+                data-editable="true"
+                data-value="moderate"
+                data-navigate-to="">
+          Moderately active
+        </button>
+
+        <button class="funnel-option"
+                data-element-type="option"
+                data-editable="true"
+                data-value="active"
+                data-navigate-to="">
+          Very active
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+<style>
+  .funnel-screen {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    min-height: 100%;
+    background: var(--bg);
+    font-family: var(--font-family);
+  }
+
+  .funnel-screen__container {
+    width: 100%;
+    max-width: var(--container-max);
+    margin: 0 auto;
+    padding: 0 var(--pad-x) var(--pad-y);
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .funnel-screen__header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0 20px;
+  }
+
+  .funnel-screen__back {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    background: none;
+    border: none;
+    border-radius: var(--radius-sm);
+    color: var(--text-muted);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+  }
+
+  .funnel-screen__back:hover { color: var(--text); }
+
+  .funnel-screen__progress-track {
+    flex: 1;
+    height: 4px;
+    background: var(--border-tile);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .funnel-screen__progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  .funnel-screen__step {
+    flex-shrink: 0;
+    color: var(--text-muted);
+    font-size: 13px;
+    min-width: 3ch;
+    text-align: right;
+  }
+
+  .funnel-screen__body {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .funnel-screen__heading {
+    margin: 0;
+    color: var(--text);
+    font-size: var(--h1-size);
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.25;
+  }
+
+  .funnel-options {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .funnel-option {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 14px var(--pad-x);
+    background: var(--card-bg);
+    border: 1.5px solid var(--border-tile);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: var(--font-family);
+    font-size: var(--option-font);
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+  }
+
+  .funnel-option:hover {
+    border-color: var(--accent);
+    box-shadow: var(--shadow);
+  }
+</style>

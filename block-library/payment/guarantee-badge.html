@@ -1,0 +1,62 @@
+<!--
+  @component: guarantee-badge
+  @category: payment
+  @tags: guarantee, money-back, trust
+  @description: Money-back guarantee badge
+  @thumbnail: /thumbnails/guarantee-badge.png
+  @version: 1.0
+-->
+<div class="funnel-guarantee"
+     data-component="guarantee-badge"
+     data-component-category="payment"
+     data-element-type="guarantee">
+
+  <span class="funnel-guarantee__icon" aria-hidden="true">🛡️</span>
+
+  <div class="funnel-guarantee__content">
+    <p class="funnel-guarantee__title"
+       data-element-type="title"
+       data-editable="true">30-Day Money-Back Guarantee</p>
+    <p class="funnel-guarantee__desc"
+       data-element-type="description"
+       data-editable="true">Not satisfied? Get a full refund within 30 days, no questions asked.</p>
+  </div>
+
+</div>
+
+<style>
+  .funnel-guarantee {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    width: 100%;
+    padding: var(--pad-y) var(--pad-x);
+    background: var(--card-bg);
+    border: 1.5px solid var(--border-tile);
+    border-radius: var(--radius);
+    font-family: var(--font-family);
+  }
+
+  .funnel-guarantee__icon {
+    font-size: 36px;
+    flex-shrink: 0;
+  }
+
+  .funnel-guarantee__content {
+    flex: 1;
+  }
+
+  .funnel-guarantee__title {
+    margin: 0 0 4px;
+    color: var(--text);
+    font-size: var(--body-size);
+    font-weight: 700;
+  }
+
+  .funnel-guarantee__desc {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 13px;
+    line-height: 1.4;
+  }
+</style>

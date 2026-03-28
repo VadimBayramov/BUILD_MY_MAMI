@@ -1,3 +1,6 @@
+import { ComponentParser } from './component-parser';
+import type { ElementNode } from '@typedefs/component';
+
 export interface ParsedElement {
   tag: string;
   id: string | null;
@@ -14,62 +17,23 @@ export interface ParsedScreen {
   rawCss: string;
 }
 
-function parseInlineStyle(styleAttr: string): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const part of styleAttr.split(';')) {
-    const idx = part.indexOf(':');
-    if (idx === -1) continue;
-    const key = part.slice(0, idx).trim().toLowerCase();
-    const val = part.slice(idx + 1).trim();
-    if (key) out[key] = val;
-  }
-  return out;
-}
-
-function directTextContent(el: Element): string {
-  let s = '';
-  for (const n of el.childNodes) {
-    if (n.nodeType === Node.TEXT_NODE) {
-      const t = (n.textContent ?? '').trim();
-      if (t) s += (s ? ' ' : '') + t;
-    }
-  }
-  return s;
-}
-
-function attrsToRecord(el: Element, skip: Set<string>): Record<string, string> {
-  const out: Record<string, string> = {};
-  for (const a of el.attributes) {
-    if (skip.has(a.name.toLowerCase())) continue;
-    out[a.name] = a.value;
-  }
-  return out;
-}
-
-function parseElement(el: Element): ParsedElement {
-  const tag = el.tagName.toLowerCase();
-  const id = el.id || null;
-  const classes = el.classList ? [...el.classList] : [];
-  const styles = parseInlineStyle(el.getAttribute('style') ?? '');
-  const attributes = attrsToRecord(el, new Set(['style', 'id', 'class']));
-  const content = directTextContent(el);
-  const children: ParsedElement[] = [];
-  for (const child of el.children) {
-    const t = child.tagName.toLowerCase();
-    if (t === 'style') continue;
-    children.push(parseElement(child));
-  }
-  return { tag, id, classes, attributes, styles, content, children };
+/** Adapt an ElementNode (content: string | null) to ParsedElement (content: string). */
+function adaptNode(node: ElementNode): ParsedElement {
+  return {
+    tag: node.tag,
+    id: node.id,
+    classes: node.classes,
+    attributes: node.attributes,
+    styles: node.styles,
+    content: node.content ?? '',
+    children: node.children.map(adaptNode),
+  };
 }
 
 export function parseHtml(html: string): ParsedScreen {
   const doc = new DOMParser().parseFromString(html, 'text/html');
   const body = doc.body;
-  const styleBlocks: string[] = [];
-  doc.querySelectorAll('style').forEach((s) => {
-    styleBlocks.push(s.textContent ?? '');
-  });
-  const rawCss = styleBlocks.join('\n\n').trim();
+  const rawCss = ComponentParser.parseStyles(doc);
 
   let root: Element | null = body ? body.querySelector('[data-screen]') : null;
   if (!root) root = body;
@@ -81,7 +45,7 @@ export function parseHtml(html: string): ParsedScreen {
   const elements: ParsedElement[] = [];
   for (const child of root.children) {
     if (child.tagName.toLowerCase() === 'style') continue;
-    elements.push(parseElement(child));
+    elements.push(adaptNode(ComponentParser.buildElementTree(child)));
   }
 
   return { screenId, elements, rawCss };

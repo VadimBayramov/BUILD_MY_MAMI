@@ -1,0 +1,46 @@
+<!--
+  @component: option-rating-stars
+  @category: interactive
+  @tags: rating, stars, score
+  @description: 1–5 star rating
+  @thumbnail: /thumbnails/option-rating-stars.png
+  @version: 1.0
+-->
+<div class="funnel-stars"
+     data-component="option-rating-stars"
+     data-component-category="interactive"
+     data-element-type="rating-stars">
+
+  <button class="funnel-star" data-element-type="star" data-value="1" aria-label="1 star">★</button>
+  <button class="funnel-star" data-element-type="star" data-value="2" aria-label="2 stars">★</button>
+  <button class="funnel-star" data-element-type="star" data-value="3" aria-label="3 stars">★</button>
+  <button class="funnel-star" data-element-type="star" data-value="4" aria-label="4 stars">★</button>
+  <button class="funnel-star" data-element-type="star" data-value="5" aria-label="5 stars">★</button>
+
+</div>
+
+<style>
+  .funnel-stars {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px 0;
+    font-family: var(--font-family);
+  }
+
+  .funnel-star {
+    background: none;
+    border: none;
+    color: var(--border-tile);
+    font-size: 36px;
+    cursor: pointer;
+    transition: var(--transition);
+    line-height: 1;
+    padding: 4px;
+  }
+
+  .funnel-star:hover,
+  .funnel-star.active {
+    color: var(--accent);
+  }
+</style>

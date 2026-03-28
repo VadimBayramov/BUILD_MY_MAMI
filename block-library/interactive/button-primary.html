@@ -1,0 +1,60 @@
+<!--
+  @component: button-primary
+  @category: interactive
+  @tags: button, cta, primary
+  @description: Main call-to-action button
+  @thumbnail: /thumbnails/button-primary.png
+  @version: 1.0
+-->
+<div class="funnel-button-block"
+     data-component="button-primary"
+     data-component-category="interactive"
+     data-element-type="button-block">
+
+  <button class="funnel-btn-primary"
+          data-element-type="button"
+          data-editable="true"
+          data-navigate-to=""
+          data-action="navigate">
+    Continue →
+  </button>
+
+</div>
+
+<style>
+  .funnel-button-block {
+    width: 100%;
+    padding: 8px 0;
+    text-align: center;
+  }
+
+  .funnel-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    max-width: 480px;
+    padding: 16px var(--pad-x);
+    background: var(--accent);
+    border: none;
+    border-radius: var(--radius);
+    color: #fff;
+    font-family: var(--font-family);
+    font-size: var(--option-font);
+    font-weight: 700;
+    cursor: pointer;
+    transition: var(--transition);
+    box-shadow: var(--shadow);
+    letter-spacing: 0.3px;
+  }
+
+  .funnel-btn-primary:hover {
+    background: var(--accent-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .funnel-btn-primary:active {
+    transform: translateY(0);
+  }
+</style>
