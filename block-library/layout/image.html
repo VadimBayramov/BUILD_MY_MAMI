@@ -1,0 +1,39 @@
+<!--
+  @component: image
+  @category: layout
+  @tags: image, media, photo
+  @description: Responsive image block
+  @thumbnail: /thumbnails/image.png
+  @version: 1.0
+-->
+<div class="funnel-image-block"
+     data-component="image"
+     data-component-category="layout"
+     data-element-type="image-block">
+
+  <img class="funnel-image"
+       data-element-type="image"
+       data-editable="true"
+       src=""
+       alt="Image description"
+       width="100%"
+       height="auto" />
+
+</div>
+
+<style>
+  .funnel-image-block {
+    width: 100%;
+    padding: 8px 0;
+    text-align: center;
+  }
+
+  .funnel-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    margin: 0 auto;
+    border-radius: var(--radius-sm);
+    object-fit: cover;
+  }
+</style>

@@ -15,6 +15,7 @@ import {
   Search,
   ChevronRight,
   X,
+  Heading,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { componentRegistry } from '@services/component-registry';
@@ -29,7 +30,7 @@ interface CategoryMeta {
 }
 
 const CATEGORY_META: Record<string, CategoryMeta> = {
-  content:      { label: 'Content',      icon: Type },
+  titles:       { label: 'Titles',       icon: Heading },
   interactive:  { label: 'Interactive',  icon: MousePointerClick },
   layout:       { label: 'Layout',       icon: Layout },
   media:        { label: 'Media',        icon: Image },
@@ -50,7 +51,7 @@ const FALLBACK_META: CategoryMeta = { label: 'Other', icon: FolderOpen };
 export function BlockLibrary() {
   const [query, setQuery] = useState('');
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(
-    () => new Set(['content', 'interactive']),
+    () => new Set(['titles', 'interactive']),
   );
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [debouncedQuery, setDebouncedQuery] = useState('');

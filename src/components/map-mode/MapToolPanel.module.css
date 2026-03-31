@@ -1,0 +1,66 @@
+.panel {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  background: var(--builder-panel);
+  border: 1px solid var(--builder-border);
+  border-radius: 10px;
+  padding: 4px;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--builder-text-muted);
+  cursor: pointer;
+  transition: var(--builder-transition);
+  position: relative;
+}
+
+.btn:hover {
+  background: var(--builder-panel-hover);
+  color: var(--builder-text);
+}
+
+.btn.active {
+  background: var(--builder-accent);
+  color: #fff;
+}
+
+.btn.active:hover {
+  background: var(--builder-accent-hover);
+}
+
+.separator {
+  height: 1px;
+  width: 22px;
+  background: var(--builder-border);
+  margin: 2px auto;
+}
+
+.shortcut {
+  position: absolute;
+  right: -2px;
+  bottom: -1px;
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--builder-text-muted);
+  opacity: 0.7;
+  pointer-events: none;
+  line-height: 1;
+}
+
+.btn.active .shortcut {
+  color: rgba(255, 255, 255, 0.6);
+}

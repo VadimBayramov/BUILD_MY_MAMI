@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { nanoid } from 'nanoid';
 import { useFunnelStore } from '@store/funnel-store';
 import { createDefaultScreen } from '@store/defaults';
-import type { Mode } from '@typedefs/ui';
+import type { Mode, MapTool } from '@typedefs/ui';
 import { resolveSpaceMode } from '@utils/screen-focus-mode';
 
 type ShortcutActions = {
@@ -31,6 +31,7 @@ type ShortcutActions = {
   openSearch: () => void;
   goToStart: () => void | false;
   goToEnd: () => void | false;
+  setMapTool: (tool: MapTool) => void;
 };
 
 export type ShortcutDefinition = {
@@ -255,6 +256,27 @@ export const SHORTCUTS: ShortcutDefinition[] = [
     matches: (e) => e.key === 'Escape',
     run: (a) => a.clearSelection(),
   },
+  {
+    id: 'tool-cursor',
+    label: 'Инструмент: Курсор',
+    keys: 'Alt+E',
+    matches: (e) => e.altKey && !mod(e) && matchesKey(e, 'KeyE', 'e'),
+    run: (a) => a.setMapTool('cursor'),
+  },
+  {
+    id: 'tool-container',
+    label: 'Инструмент: Контейнер',
+    keys: 'Alt+R',
+    matches: (e) => e.altKey && !mod(e) && matchesKey(e, 'KeyR', 'r'),
+    run: (a) => a.setMapTool('container'),
+  },
+  {
+    id: 'tool-text',
+    label: 'Инструмент: Текст',
+    keys: 'Alt+T',
+    matches: (e) => e.altKey && !mod(e) && matchesKey(e, 'KeyT', 't'),
+    run: (a) => a.setMapTool('text'),
+  },
 ];
 
 export const VISIBLE_SHORTCUTS = SHORTCUTS.filter(
@@ -410,6 +432,10 @@ export function useKeyboardShortcuts() {
 
       openSearch: () => {
         window.dispatchEvent(new CustomEvent('funnel:search-open'));
+      },
+
+      setMapTool: (tool) => {
+        useFunnelStore.getState().setMapTool(tool);
       },
 
       goToStart: () => {

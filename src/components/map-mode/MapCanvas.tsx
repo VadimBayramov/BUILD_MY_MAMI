@@ -30,6 +30,7 @@ import { ScreenEdge } from './ScreenEdge';
 import { BlockNode } from './BlockNode';
 import { CanvasControls } from './CanvasControls';
 import { MapToolbar } from './MapToolbar';
+import { MapToolPanel } from './MapToolPanel';
 import { CanvasDropZone } from './CanvasDropZone';
 import { HtmlFileDropZone } from './HtmlFileDropZone';
 import { ContextMenu, type ContextMenuEntry } from '@components/shared/ContextMenu';
@@ -123,6 +124,7 @@ function screensToNodes(
   screens: Record<string, Screen>,
   selectedScreenIds: string[],
   screenDiagnostics: ReturnType<typeof validateConnections>['screens'],
+  mapTool?: string,
 ): Node[] {
   const selectedSet = new Set(selectedScreenIds);
   return Object.values(screens).map((screen) => {
@@ -136,7 +138,7 @@ function screensToNodes(
         label: screen.name,
         screenType: screen.type,
         order: screen.order,
-        // diagnostics forwarded into ScreenNode
+        mapTool: mapTool ?? 'cursor',
         isStart: diag?.statuses.has('start') ?? false,
         isDeadEnd: diag?.statuses.has('dead-end') ?? false,
         isDuplicateDefault: diag?.statuses.has('duplicate-default') ?? false,
@@ -247,9 +249,10 @@ function MapCanvasInner() {
     [screens, connections, startScreenId],
   );
 
+  const mapToolForNodes = useFunnelStore((s) => s.ui.mapTool);
   const screenNodes = useMemo(
-    () => screensToNodes(screens, selectedScreenIds, diagnostics.screens),
-    [screens, selectedScreenIds, diagnostics.screens],
+    () => screensToNodes(screens, selectedScreenIds, diagnostics.screens, mapToolForNodes),
+    [screens, selectedScreenIds, diagnostics.screens, mapToolForNodes],
   );
   const blockNodes = useMemo(() => blocksToNodes(blocks), [blocks]);
   const allNodes = useMemo(() => [...blockNodes, ...screenNodes], [blockNodes, screenNodes]);
@@ -420,7 +423,7 @@ function MapCanvasInner() {
   }, []);
 
   // ── Fit View (keyboard shortcut Ctrl+Shift+1 dispatches custom event) ───
-  const { fitView, setCenter, getViewport, setViewport } = useReactFlow();
+  const { fitView, setCenter, getViewport, setViewport, zoomIn, zoomOut } = useReactFlow();
 
   // Ref for async access (WASD handler, etc.)
   const rfMethodsRef = useRef({ fitView, setCenter, getViewport, setViewport });
@@ -711,15 +714,43 @@ function MapCanvasInner() {
     ];
   }, [ctxTarget, fitView]);
 
+  // ── Alt + scroll → zoom canvas instead of browser ──────────────────────
+  const canvasWrapRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = canvasWrapRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      if (!e.altKey) return;
+      e.preventDefault();
+      if (e.deltaY < 0) void zoomIn({ duration: 100 });
+      else void zoomOut({ duration: 100 });
+    };
+    el.addEventListener('wheel', handler, { passive: false });
+    return () => el.removeEventListener('wheel', handler);
+  }, [zoomIn, zoomOut]);
+
+  // ── Alt+scroll forwarded from iframes via postMessage ─────────────────
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const deltaY = (e as CustomEvent).detail;
+      if (typeof deltaY !== 'number') return;
+      if (deltaY < 0) void zoomIn({ duration: 100 });
+      else void zoomOut({ duration: 100 });
+    };
+    window.addEventListener('funnel:alt-zoom', handler);
+    return () => window.removeEventListener('funnel:alt-zoom', handler);
+  }, [zoomIn, zoomOut]);
+
   const { active: dndActive } = useDndContext();
   // Show CanvasDropZone only for block drags (from BlockLibrary), not element row reorder drags
   const isDraggingBlock = dndActive !== null && dndActive.data?.current?.type !== 'element';
 
+  const mapTool = useFunnelStore((s) => s.ui.mapTool);
   const panOnDrag = mapLocked ? false : !altPressed;
   const selectionOnDrag = mapLocked ? false : altPressed;
 
   return (
-    <div className={styles.canvasWrap} tabIndex={-1}>
+    <div className={styles.canvasWrap} ref={canvasWrapRef} tabIndex={-1}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -778,6 +809,7 @@ function MapCanvasInner() {
           </div>
         </Panel>
       </ReactFlow>
+      <MapToolPanel />
       <CanvasDropZone isActive={isDraggingBlock} />
       <HtmlFileDropZone />
       {ctxTarget && (

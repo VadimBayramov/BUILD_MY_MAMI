@@ -46,7 +46,7 @@ const OPTION_LIST_HTML = `<!--
 
 const HEADING_HTML = `<!--
   @component: heading
-  @category: content
+  @category: titles
   @tags: text, title, h1
   @description: H1–H6 heading block
   @thumbnail: /thumbnails/heading.png
@@ -54,7 +54,7 @@ const HEADING_HTML = `<!--
 -->
 <div class="funnel-heading-block"
      data-component="heading"
-     data-component-category="content"
+     data-component-category="titles"
      data-element-type="heading-block">
   <h1 class="funnel-heading"
       data-element-type="heading"
@@ -264,9 +264,9 @@ describe('ComponentParser.parse', () => {
     expect(def.elementTree.attributes['data-component']).toBe('option-list');
   });
 
-  test('heading: category is "content"', () => {
+  test('heading: category is "titles"', () => {
     const def = ComponentParser.parse(HEADING_HTML);
-    expect(def.meta.category).toBe('content');
+    expect(def.meta.category).toBe('titles');
     expect(def.meta.tags).toContain('h1');
   });
 

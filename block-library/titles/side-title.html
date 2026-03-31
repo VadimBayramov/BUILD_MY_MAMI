@@ -1,0 +1,38 @@
+<!--
+  @component: side-title
+  @category: titles
+  @tags: side, vertical, title, rotated
+  @description: Vertical text rendered letter by letter
+  @thumbnail: /thumbnails/side-title.png
+  @version: 1.0
+-->
+<div class="funnel-side-title-block"
+     data-component="side-title"
+     data-component-category="titles"
+     data-element-type="side-title-block">
+
+  <span class="funnel-side-title"
+        data-element-type="side-title"
+        data-editable="true">SIDE</span>
+
+</div>
+
+<style>
+  .funnel-side-title-block {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    font-family: var(--font-family);
+  }
+
+  .funnel-side-title {
+    writing-mode: vertical-lr;
+    text-orientation: upright;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    font-family: var(--font-family);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+</style>

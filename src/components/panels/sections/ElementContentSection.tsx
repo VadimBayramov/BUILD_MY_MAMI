@@ -49,7 +49,7 @@ export function ElementContentSection({ element }: Props) {
       </div>
 
       <div className={styles.field}>
-        <label htmlFor={contentId} className={styles.label}>Content</label>
+        <label htmlFor={contentId} className={styles.label}>Text</label>
         <textarea
           id={contentId}
           className={styles.textarea}

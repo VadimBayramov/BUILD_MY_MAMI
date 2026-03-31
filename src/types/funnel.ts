@@ -170,6 +170,7 @@ export interface Screen {
 
 export type ElementType =
   | 'heading'
+  | 'subtitle'
   | 'paragraph'
   | 'image'
   | 'button'
@@ -191,6 +192,9 @@ export type ElementType =
   | 'review'
   | 'timer'
   | 'loader'
+  | 'text-list'
+  | 'side-title'
+  | 'terms-title'
   | 'custom';
 
 export type ElementVisibility =

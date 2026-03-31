@@ -1,0 +1,43 @@
+<!--
+  @component: heading
+  @category: titles
+  @tags: text, title, h1
+  @description: H1–H6 heading block
+  @thumbnail: /thumbnails/heading.png
+  @version: 1.0
+-->
+<div class="funnel-heading-block"
+     data-component="heading"
+     data-component-category="titles"
+     data-element-type="heading-block">
+
+  <h1 class="funnel-heading"
+      data-element-type="heading"
+      data-editable="true"
+      data-level="1">
+    Your Headline Goes Here
+  </h1>
+
+</div>
+
+<style>
+  .funnel-heading-block {
+    width: 100%;
+    padding: 8px 0;
+    font-family: var(--font-family);
+  }
+
+  .funnel-heading {
+    margin: 0;
+    color: var(--text);
+    font-family: var(--font-family);
+    font-size: var(--h1-size);
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  .funnel-heading[data-level="1"] { font-size: var(--h1-size); }
+  .funnel-heading[data-level="2"] { font-size: var(--h2-size); }
+  .funnel-heading[data-level="3"] { font-size: calc(var(--h2-size) * 0.85); }
+</style>

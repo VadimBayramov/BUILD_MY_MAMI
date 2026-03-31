@@ -13,6 +13,8 @@ export interface PanelConfig {
 
 export type ManagerTab = 'preview' | 'translations' | 'payments';
 
+export type MapTool = 'cursor' | 'container' | 'text';
+
 export interface UIState {
   mode: Mode;
   selectedScreenIds: string[];
@@ -36,6 +38,7 @@ export interface UIState {
   managerTab: ManagerTab;
   renameFocusId: string | null;
   idFocusId: string | null;
+  mapTool: MapTool;
 }
 
 export interface DraggedItem {

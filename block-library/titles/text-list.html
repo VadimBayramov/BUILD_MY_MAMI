@@ -1,0 +1,78 @@
+<!--
+  @component: text-list
+  @category: titles
+  @tags: list, bullet, dash, icon, items
+  @description: List with bullet/dash/icon markers
+  @thumbnail: /thumbnails/text-list.png
+  @version: 1.0
+-->
+<div class="funnel-text-list"
+     data-component="text-list"
+     data-component-category="titles"
+     data-element-type="text-list-block"
+     data-list-style="bullet">
+
+  <div class="funnel-text-list__item"
+       data-element-type="list-item"
+       data-editable="true">
+    <span class="funnel-text-list__marker" data-element-type="icon" aria-hidden="true">•</span>
+    <span class="funnel-text-list__text">First item in the list</span>
+  </div>
+
+  <div class="funnel-text-list__item"
+       data-element-type="list-item"
+       data-editable="true">
+    <span class="funnel-text-list__marker" data-element-type="icon" aria-hidden="true">•</span>
+    <span class="funnel-text-list__text">Second item in the list</span>
+  </div>
+
+  <div class="funnel-text-list__item"
+       data-element-type="list-item"
+       data-editable="true">
+    <span class="funnel-text-list__marker" data-element-type="icon" aria-hidden="true">•</span>
+    <span class="funnel-text-list__text">Third item in the list</span>
+  </div>
+
+</div>
+
+<style>
+  .funnel-text-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 0;
+    font-family: var(--font-family);
+  }
+
+  .funnel-text-list__item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .funnel-text-list__marker {
+    flex-shrink: 0;
+    width: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    font-size: var(--body-size);
+    line-height: 1.5;
+  }
+
+  .funnel-text-list__text {
+    color: var(--text);
+    font-size: var(--body-size);
+    line-height: 1.5;
+  }
+
+  /* data-list-style="dash" → marker shows — */
+  .funnel-text-list[data-list-style="dash"] .funnel-text-list__marker::before { content: "—"; }
+  .funnel-text-list[data-list-style="dash"] .funnel-text-list__marker { font-size: 0; }
+  .funnel-text-list[data-list-style="dash"] .funnel-text-list__marker::before { font-size: var(--body-size); }
+
+  /* data-list-style="icon" → marker shows ✓ */
+  .funnel-text-list[data-list-style="icon"] .funnel-text-list__marker { color: var(--accent); }
+</style>

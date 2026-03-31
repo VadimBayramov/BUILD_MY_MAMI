@@ -47,6 +47,11 @@
   background: rgba(59, 130, 246, 0.05);
 }
 
+.overlayEditable {
+  cursor: text;
+  touch-action: auto;
+}
+
 .overlaySelected {
   border-color: rgba(59, 130, 246, 0.85);
   background: rgba(59, 130, 246, 0.1);
@@ -70,10 +75,19 @@
   font-size: 14px;
   font-family: inherit;
   line-height: 1.4;
-  resize: none;
   outline: none;
   box-shadow: 0 4px 16px rgba(59, 130, 246, 0.2);
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  cursor: text;
 }
+
+.inlineEdit b, .inlineEdit strong { font-weight: 700; }
+.inlineEdit i, .inlineEdit em { font-style: italic; }
+.inlineEdit u { text-decoration: underline; }
+.inlineEdit s, .inlineEdit strike { text-decoration: line-through; }
+.inlineEdit a { color: var(--builder-accent, #3b82f6); text-decoration: underline; cursor: pointer; }
 
 .overlayTag {
   position: absolute;

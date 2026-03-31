@@ -107,6 +107,7 @@
     0 4px 10px rgba(0, 0, 0, 0.44);
   transition: box-shadow 0.2s ease, outline 0.15s ease;
   overflow: hidden;
+  isolation: isolate;
 }
 
 /* ── Drop-over state ─────────────────────────────────────────────────────── */
@@ -170,6 +171,9 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  /* Prevents subpixel bleed at high zoom — forces GPU compositing layer */
+  will-change: transform;
+  -webkit-mask-image: -webkit-radial-gradient(white, black);
 }
 
 /* ── Dynamic Island ──────────────────────────────────────────────────────── */
@@ -191,6 +195,7 @@
   min-height: 0;
   position: relative;
   overflow: hidden;
+  border-radius: 0 0 30px 30px;
 }
 
 /*
@@ -273,6 +278,49 @@
 .handle:hover {
   width: 14px !important;
   height: 14px !important;
+}
+
+/* ── Overlay layer for cursor tool (like manager mode) ─────────────────── */
+
+.overlayLayer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.elemOverlay {
+  position: absolute;
+  z-index: 2;
+  padding: 0;
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  background: rgba(59, 130, 246, 0);
+  cursor: grab;
+  touch-action: none;
+  appearance: none;
+  pointer-events: auto;
+  transition: border-color 0.12s ease, background 0.12s ease, box-shadow 0.12s ease;
+}
+
+.elemOverlay:hover {
+  border-color: rgba(59, 130, 246, 0.38);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.elemOverlaySelected {
+  border-color: rgba(59, 130, 246, 0.85);
+  background: rgba(59, 130, 246, 0.1);
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.15);
+}
+
+.elemOverlayDragging {
+  z-index: 10;
+  cursor: grabbing;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.28);
 }
 
 /* Invisible wide target zone on the left side for easier connections */

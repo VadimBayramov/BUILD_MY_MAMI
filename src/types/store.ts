@@ -9,7 +9,7 @@ import type {
   ConditionGroup,
   ElementIndexes,
 } from './funnel';
-import type { UIState, HistoryState, Mode } from './ui';
+import type { UIState, HistoryState, Mode, MapTool } from './ui';
 import type { ProjectDocument } from './project';
 
 // ── Root Application State ──
@@ -76,6 +76,7 @@ export interface UIActions {
   setShowMinimap: (visible: boolean) => void;
   triggerRename: (screenId: string | null) => void;
   triggerIdFocus: (id: string | null) => void;
+  setMapTool: (tool: MapTool) => void;
 }
 
 export interface HistoryActions {

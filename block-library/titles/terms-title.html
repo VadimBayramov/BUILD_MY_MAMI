@@ -1,0 +1,51 @@
+<!--
+  @component: terms-title
+  @category: titles
+  @tags: terms, links, legal, footer
+  @description: Text block with inline links (Terms, Privacy, etc.)
+  @thumbnail: /thumbnails/terms-title.png
+  @version: 1.0
+-->
+<div class="funnel-terms-title-block"
+     data-component="terms-title"
+     data-component-category="titles"
+     data-element-type="terms-title-block">
+
+  <p class="funnel-terms-title"
+     data-element-type="terms-title"
+     data-editable="true">
+    By continuing you agree to our
+    <a href="#" class="funnel-terms-link" data-element-type="terms-link" data-link-type="terms">Terms of Service</a>
+    and
+    <a href="#" class="funnel-terms-link" data-element-type="terms-link" data-link-type="privacy">Privacy Policy</a>
+  </p>
+
+</div>
+
+<style>
+  .funnel-terms-title-block {
+    width: 100%;
+    padding: 8px 0;
+    font-family: var(--font-family);
+  }
+
+  .funnel-terms-title {
+    margin: 0;
+    color: var(--text-muted);
+    font-family: var(--font-family);
+    font-size: calc(var(--body-size) * 0.85);
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  .funnel-terms-link {
+    color: var(--accent);
+    text-decoration: underline;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+
+  .funnel-terms-link:hover {
+    opacity: 0.8;
+  }
+</style>

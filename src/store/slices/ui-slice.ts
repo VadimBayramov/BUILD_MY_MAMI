@@ -32,6 +32,7 @@ const baseUI: UIState = {
   managerTab: 'preview',
   renameFocusId: null,
   idFocusId: null,
+  mapTool: 'cursor',
 };
 
 function buildPersistedUIState(): UIState {
@@ -150,4 +151,7 @@ export const createUISlice: StateCreator<UISlice, [], [], UIActions> = (set, get
 
   triggerIdFocus: (id) =>
     set((s) => ({ ui: { ...s.ui, idFocusId: id } })),
+
+  setMapTool: (tool) =>
+    set((s) => ({ ui: { ...s.ui, mapTool: tool } })),
 });

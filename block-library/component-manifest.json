@@ -3,56 +3,92 @@
   "components": [
     {
       "id": "heading",
-      "category": "content",
-      "tags": ["text", "title", "h1"],
+      "category": "titles",
+      "tags": ["text", "title", "h1", "heading"],
       "name": "Heading",
       "description": "H1–H6 heading block",
-      "file": "content/heading.html",
+      "file": "titles/heading.html",
+      "thumbnail": null
+    },
+    {
+      "id": "subtitle",
+      "category": "titles",
+      "tags": ["text", "subtitle", "h2", "subheading"],
+      "name": "Subtitle",
+      "description": "Subtitle between heading and paragraph",
+      "file": "titles/subtitle.html",
       "thumbnail": null
     },
     {
       "id": "paragraph",
-      "category": "content",
-      "tags": ["text", "body"],
+      "category": "titles",
+      "tags": ["text", "body", "paragraph"],
       "name": "Paragraph",
       "description": "Body text paragraph",
-      "file": "content/paragraph.html",
-      "thumbnail": null
-    },
-    {
-      "id": "image",
-      "category": "content",
-      "tags": ["image", "media", "photo"],
-      "name": "Image",
-      "description": "Responsive image block",
-      "file": "content/image.html",
-      "thumbnail": null
-    },
-    {
-      "id": "spacer",
-      "category": "content",
-      "tags": ["spacer", "gap"],
-      "name": "Spacer",
-      "description": "Empty vertical spacer",
-      "file": "content/spacer.html",
-      "thumbnail": null
-    },
-    {
-      "id": "divider",
-      "category": "content",
-      "tags": ["divider", "separator", "line"],
-      "name": "Divider",
-      "description": "Horizontal divider line",
-      "file": "content/divider.html",
+      "file": "titles/paragraph.html",
       "thumbnail": null
     },
     {
       "id": "icon-text",
-      "category": "content",
-      "tags": ["icon", "text", "feature"],
+      "category": "titles",
+      "tags": ["icon", "text", "feature", "bullet"],
       "name": "Icon + Text",
-      "description": "Icon with label",
-      "file": "content/icon-text.html",
+      "description": "Icon with label text",
+      "file": "titles/icon-text.html",
+      "thumbnail": null
+    },
+    {
+      "id": "text-list",
+      "category": "titles",
+      "tags": ["list", "bullet", "dash", "icon", "items"],
+      "name": "List",
+      "description": "List with bullet/dash/icon markers",
+      "file": "titles/text-list.html",
+      "thumbnail": null
+    },
+    {
+      "id": "side-title",
+      "category": "titles",
+      "tags": ["side", "vertical", "title", "rotated"],
+      "name": "Side Title",
+      "description": "Vertical text rendered letter by letter",
+      "file": "titles/side-title.html",
+      "thumbnail": null
+    },
+    {
+      "id": "terms-title",
+      "category": "titles",
+      "tags": ["terms", "links", "legal", "footer"],
+      "name": "Terms Title",
+      "description": "Text block with inline links (Terms, Privacy, etc.)",
+      "file": "titles/terms-title.html",
+      "thumbnail": null
+    },
+    {
+      "id": "image",
+      "category": "layout",
+      "tags": ["image", "media", "photo"],
+      "name": "Image",
+      "description": "Responsive image block",
+      "file": "layout/image.html",
+      "thumbnail": null
+    },
+    {
+      "id": "spacer",
+      "category": "layout",
+      "tags": ["spacer", "gap"],
+      "name": "Spacer",
+      "description": "Empty vertical spacer",
+      "file": "layout/spacer.html",
+      "thumbnail": null
+    },
+    {
+      "id": "divider",
+      "category": "layout",
+      "tags": ["divider", "separator", "line"],
+      "name": "Divider",
+      "description": "Horizontal divider line",
+      "file": "layout/divider.html",
       "thumbnail": null
     },
     {

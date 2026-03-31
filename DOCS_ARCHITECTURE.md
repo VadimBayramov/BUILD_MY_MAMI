@@ -1330,11 +1330,14 @@ calculateAutoProgress(currentScreenId):
 │   ├ Loader          │
 │   ├ Form            │
 │   └ Paywall         │
-│ 📂 Content          │
+│ 📂 Titles           │
 │   ├ Heading         │
+│   ├ Subtitle        │
 │   ├ Paragraph       │
-│   ├ Image           │
-│   └ Spacer          │
+│   ├ Icon + Text     │
+│   ├ List            │
+│   ├ Side Title      │
+│   └ Terms Title     │
 │ 📂 Interactive      │
 │   ├ Button          │
 │   ├ Option List     │
@@ -1344,6 +1347,9 @@ calculateAutoProgress(currentScreenId):
 │ 📂 Layout           │
 │   ├ Container       │
 │   ├ Card            │
+│   ├ Image           │
+│   ├ Spacer          │
+│   ├ Divider         │
 │   ├ Hero Section    │
 │   └ Footer          │
 │ 📂 Templates        │
@@ -1948,6 +1954,51 @@ class ComponentParser {
 5. Появляется в библиотеке блоков (левая панель)
 6. Можно перетащить на экран
 ```
+
+### 10.4 Категория Titles — текстовые элементы
+
+Категория **Titles** (ранее Content) содержит все текстовые/типографские элементы воронки. Каждый элемент поддерживает inline-редактирование — двойной клик на элемент в менеджере открывает contenteditable-область с floating toolbar (B/I/U/Link/Color) как в FunnelFox.
+
+| Элемент | HTML-файл | data-element-type | Описание |
+|---------|-----------|-------------------|----------|
+| **Heading** | `titles/heading.html` | `heading` | Заголовок H1–H6. data-level управляет уровнем |
+| **Subtitle** | `titles/subtitle.html` | `subtitle` | Подзаголовок — между heading и paragraph по размеру |
+| **Paragraph** | `titles/paragraph.html` | `paragraph` | Основной текст. Поддержка Rich Text (bold/italic/underline) |
+| **Icon + Text** | `titles/icon-text.html` | `icon-text` | Иконка + label. Иконка: emoji, SVG или image URL |
+| **List** | `titles/text-list.html` | `text-list` | Список с маркерами. data-list-style: `bullet` (•), `dash` (—), `icon` (✓ или кастомный) |
+| **Side Title** | `titles/side-title.html` | `side-title` | Вертикальный текст по буквам (writing-mode: vertical-lr, text-orientation: upright) |
+| **Terms Title** | `titles/terms-title.html` | `terms-title` | Текст с inline-ссылками. Каждая ссылка имеет data-link-type (terms/privacy/support) и редактируемый URL |
+
+**Inline-редактирование (подход FunnelFox):**
+
+```
+┌──────────────────────────────┐
+│  [B] [I] [U] [🔗] [🎨]      │  ← floating toolbar при выделении текста
+├──────────────────────────────┤
+│                              │
+│  Awaken your inner power     │  ← contenteditable=true
+│  with Aura Reading           │
+│                              │
+└──────────────────────────────┘
+```
+
+- Вместо textarea — используем `contenteditable` div/span для нативного rich-text
+- При выделении текста появляется floating toolbar
+- Toolbar привязан к selection range, исчезает при потере фокуса
+- Содержимое сохраняется как innerHTML в `element.content`
+- Для heading/subtitle/paragraph: полный toolbar (B/I/U/Link/Color)
+- Для list items: только B/I/U
+- Для terms-title: B/I/U + Link (ссылки — ключевая фича)
+- Для side-title: только plain text (без форматирования)
+
+**List — переключение стиля маркера:**
+
+В Right Panel для элемента List доступен селектор стиля маркера:
+- `bullet` — точка (•)
+- `dash` — тире (—)
+- `icon` — иконка (✓ по умолчанию, можно менять через icon picker)
+
+Стиль управляется атрибутом `data-list-style` на корневом элементе списка.
 
 ---
 
@@ -3314,12 +3365,28 @@ iframe на карте: width: 346px, scale(0.618) → визуально 214px
 | Escape | Менеджер | Назад на карту с фокусом |
 | WASD / Стрелки | Карта (Lock mode) | Pan viewport (80px/150ms) |
 
-### 16.6 Inline-редактирование в менеджере
+### 16.6 Inline-редактирование текста (как в FunnelFox)
 
-- Двойной клик по overlay текстового элемента (heading, paragraph, button, option, label, footer) → textarea
-- Enter → сохранить (`updateElement(id, { content })`), Escape → отменить
-- Blur → автосохранение
+Текстовые элементы категории **Titles** редактируются inline прямо на экране:
+
+- **Двойной клик** по overlay текстового элемента → contenteditable-область (не textarea — для сохранения HTML-форматирования)
+- **Поддерживаемые типы**: heading, subtitle, paragraph, icon+text (label), list (list-item text), terms-title, side-title, button, option, footer
+- **Toolbar при выделении текста**: появляется floating toolbar с кнопками Bold (B), Italic (I), Underline (U), Link (🔗), Color (🎨) — как в FunnelFox
+- **Enter** → сохранить (`updateElement(id, { content })`), **Escape** → отменить
+- **Blur** → автосохранение
 - Все правки undoable через `Ctrl+Z`
+
+**Особенности по типам элементов:**
+
+| Элемент | Inline-редактирование | Доп. настройки в Right Panel |
+|---------|----------------------|------------------------------|
+| **Heading** | contenteditable + toolbar | Tag level (h1–h6), alignment |
+| **Subtitle** | contenteditable + toolbar | Tag level (h2–h4), alignment |
+| **Paragraph** | contenteditable + toolbar | Alignment, line-height |
+| **Icon + Text** | label — contenteditable; icon — picker | Icon source (emoji/SVG/image) |
+| **List** | каждый item contenteditable | List style: bullet (•) / dash (—) / icon (✓) |
+| **Side Title** | contenteditable (вертикальный текст) | Letter-spacing, text-transform |
+| **Terms Title** | contenteditable + ссылки inline | Каждая ссылка → URL в panel, data-link-type |
 
 ### 16.7 Интерактивный iframe на карте
 
@@ -3379,6 +3446,19 @@ Phase 3 — Парсер и стили (неделя 5-6)
 
 
 ### ДОРАБОТКА - ФАЗА 3 является перевалочным пунктом, где необходимо проработать каждый html стиль что будет добавляться на экраны. Библиотека - html элементов для воронки. ###
+
+Phase 3.5 — Архитектурная переработка компонентной системы
+  ├── Правая панель: индивидуальные секции настроек по ElementType (element-sections-config.ts)
+  ├── Фикс бага кастомизации текста: ContentEditor → RichTextEditor / PlainTextInput / CodeEditor
+  ├── Custom HTML Block: CodeMirror editor + live preview + CSS scoping
+  ├── Визуальная иерархия категорий в левой панели (3 уровня: tier + цветовые акценты)
+  ├── Мини-превью компонентов в BlockLibrary (iframe 120×80, hover tooltip 240×160)
+  ├── Save Styles: сохранение пользовательских стилей элементов + reuse
+  ├── HTML Parser Block: drop zone → html-splitter → parsed draggable blocks с превью
+  ├── Drag & Drop без ограничений: insertion indicator, drop на заполненный экран
+  ├── Cross-screen drag (Alt + drag) → moveElementToScreen
+  ├── Новые секции правой панели: ButtonAction, OptionConfig, InputConfig, Payment, Image, Video, Icon, ListStyle, Link, Timer, Loader, Review, Layout, RawHtml, DataAttrs
+  └── Подробный план: DOCS-WAYS-BUILD/PHASE-3.5-BIG-CHANGE.md
 
 
 Phase 4 — Режимы + Localization Hub (неделя 7-9)

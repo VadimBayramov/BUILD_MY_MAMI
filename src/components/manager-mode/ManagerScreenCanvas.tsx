@@ -7,9 +7,13 @@ import { getScreenHtml } from '@services/html-cache';
 import type { FunnelElement } from '@typedefs/funnel';
 import { getElementOrderGroup } from '@utils/element-order';
 import { buildPreviewDocument } from '@utils/preview-document';
+import { TextFormatToolbar } from '@components/shared/TextFormatToolbar';
 import styles from './ManagerScreenCanvas.module.css';
 
-const EDITABLE_TYPES = new Set(['heading', 'paragraph', 'button', 'option', 'label', 'footer']);
+const EDITABLE_TYPES = new Set([
+  'heading', 'subtitle', 'paragraph', 'button', 'option',
+  'label', 'footer', 'text-list', 'side-title', 'terms-title',
+]);
 
 type OverlayBox = {
   id: string;
@@ -31,8 +35,9 @@ function RootElementOverlay({
   isSelected: boolean;
 }) {
   const [editing, setEditing] = useState(false);
-  const [editValue, setEditValue] = useState('');
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const editRef = useRef<HTMLDivElement>(null);
+  const [toolbarAnchor, setToolbarAnchor] = useState<{ top: number; left: number; width: number } | null>(null);
+  const isTextEditable = EDITABLE_TYPES.has(element.type);
 
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: element.id,
@@ -44,46 +49,74 @@ function RootElementOverlay({
   });
 
   const commitEdit = useCallback(() => {
-    const trimmed = editValue.trim();
-    if (trimmed && trimmed !== element.content) {
-      useFunnelStore.getState().updateElement(element.id, { content: trimmed });
+    const el = editRef.current;
+    if (!el) { setEditing(false); return; }
+    const html = el.innerHTML.trim();
+    if (html && html !== element.content) {
+      useFunnelStore.getState().updateElement(element.id, { content: html });
     }
     setEditing(false);
-  }, [editValue, element.id, element.content]);
-
-  const handleDoubleClick = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!EDITABLE_TYPES.has(element.type)) return;
-    setEditValue(element.content ?? '');
-    setEditing(true);
-  }, [element.type, element.content]);
+    setToolbarAnchor(null);
+  }, [element.id, element.content]);
 
   useEffect(() => {
-    if (editing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
+    if (editing && editRef.current) {
+      const el = editRef.current;
+      el.innerHTML = element.content ?? '';
+      el.focus();
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const sel = window.getSelection();
+      sel?.removeAllRanges();
+      sel?.addRange(range);
     }
-  }, [editing]);
+  }, [editing, element.content]);
+
+  const updateToolbarPosition = useCallback(() => {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || !editRef.current?.contains(sel.anchorNode)) {
+      setToolbarAnchor(null);
+      return;
+    }
+    const range = sel.getRangeAt(0);
+    const rect = range.getBoundingClientRect();
+    setToolbarAnchor({ top: rect.top, left: rect.left, width: rect.width });
+  }, []);
+
+  useEffect(() => {
+    if (!editing) return;
+    document.addEventListener('selectionchange', updateToolbarPosition);
+    return () => document.removeEventListener('selectionchange', updateToolbarPosition);
+  }, [editing, updateToolbarPosition]);
+
+  const handleBlur = useCallback((e: React.FocusEvent) => {
+    const related = e.relatedTarget as HTMLElement | null;
+    if (related?.closest('[data-fb-toolbar]')) return;
+    commitEdit();
+  }, [commitEdit]);
 
   if (editing) {
     return (
-      <textarea
-        ref={inputRef}
-        className={styles.inlineEdit}
-        style={{
-          top: box.top,
-          left: box.left,
-          width: box.width,
-          height: box.height,
-        }}
-        value={editValue}
-        onChange={(e) => setEditValue(e.target.value)}
-        onBlur={commitEdit}
-        onKeyDown={(e) => {
-          if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); commitEdit(); }
-          if (e.key === 'Escape') setEditing(false);
-        }}
-      />
+      <>
+        <TextFormatToolbar anchorRect={toolbarAnchor} containerEl={editRef.current} />
+        <div
+          ref={editRef}
+          contentEditable
+          suppressContentEditableWarning
+          className={styles.inlineEdit}
+          style={{
+            top: box.top,
+            left: box.left,
+            width: box.width,
+            minHeight: box.height,
+          }}
+          onBlur={handleBlur}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); commitEdit(); }
+            if (e.key === 'Escape') { setEditing(false); setToolbarAnchor(null); }
+          }}
+        />
+      </>
     );
   }
 
@@ -93,6 +126,7 @@ function RootElementOverlay({
       type="button"
       className={[
         styles.overlay,
+        isTextEditable ? styles.overlayEditable : '',
         isSelected ? styles.overlaySelected : '',
         isDragging ? styles.overlayDragging : '',
       ].join(' ')}
@@ -107,11 +141,13 @@ function RootElementOverlay({
       onClick={(event) => {
         event.stopPropagation();
         useFunnelStore.getState().selectElement(element.id, event.ctrlKey || event.metaKey);
+        if (isTextEditable && event.detail >= 2) {
+          setEditing(true);
+        }
       }}
-      onDoubleClick={handleDoubleClick}
       title={element.content || element.type}
       {...attributes}
-      {...listeners}
+      {...(isTextEditable ? {} : listeners)}
     >
     </button>
   );
